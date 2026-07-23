@@ -24,61 +24,68 @@
 
   <style>
   body { 
-    font-family: Arial; 
-    margin: 0; 
-    padding: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  font-family: Arial; 
+  margin: 0; 
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-  #title {
-    font-size: 40px;
-    text-align: center;
-    margin: 10px 0;
-  }
+#title {
+  font-size: 40px;
+  text-align: center;
+  margin: 10px 0;
+}
 
-  #messages {
-    flex: 1;
-    border: 1px solid #ccc;
-    overflow-y: scroll;
-    padding: 10px;
-    font-size: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+#messages {
+  flex: 1;
+  border: 1px solid #ccc;
+  overflow-y: scroll;
+  padding: 10px;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  .bubble {
-    max-width: 70%;          /* prevents stretching across screen */
-    padding: 10px 15px;
-    border-radius: 15px;
-    word-wrap: break-word;   /* wraps long text */
-    display: inline-block;
-  }
+.bubble {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 15px;
+  word-wrap: break-word;
+  display: inline-block;
+}
 
-  .me {
-    background-color: #4da6ff;   /* your colour */
-    color: white;
-    align-self: flex-end;        /* right side */
-  }
+.me {
+  background-color: #4da6ff;
+  color: white;
+  align-self: flex-end;
+}
 
-  .other {
-    background-color: #e6e6e6;   /* grey for others */
-    color: black;
-    align-self: flex-start;      /* left side */
-  }
+.other {
+  background-color: #e6e6e6;
+  color: black;
+  align-self: flex-start;
+}
 
-  #input {
-    width: 80%;
-    padding: 10px;
-    font-size: 20px;
-  }
+#inputRow {
+  display: flex;
+  padding: 10px;
+  gap: 10px;
+}
 
-  button {
-    padding: 10px;
-    font-size: 20px;
-  }
+#input {
+  flex: 1;
+  padding: 10px;
+  font-size: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 20px;
+}
+
 </style>
 
 </head>
