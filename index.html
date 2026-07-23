@@ -23,10 +23,34 @@
   </script>
 
   <style>
-    body { font-family: Arial; max-width: 500px; margin: auto; }
-    #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; }
-    #input { width: 80%; }
-  </style>
+  body { 
+    font-family: Arial; 
+    margin: 0; 
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #messages {
+    flex: 1;
+    border: 1px solid #ccc;
+    overflow-y: scroll;
+    padding: 10px;
+  }
+
+  #input {
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  button {
+    padding: 10px;
+    font-size: 16px;
+  }
+</style>
+
 </head>
 
 <body>
