@@ -1,5 +1,6 @@
 const db = firebase.database();
 
+// SEND MESSAGE
 function sendMessage() {
   const text = document.getElementById("input").value;
   if (text.trim() === "") return;
@@ -12,6 +13,7 @@ function sendMessage() {
   document.getElementById("input").value = "";
 }
 
+// DISPLAY MESSAGES WITH BUBBLES
 db.ref("messages").on("child_added", snapshot => {
   const msg = snapshot.val();
 
@@ -27,6 +29,10 @@ db.ref("messages").on("child_added", snapshot => {
   }
 
   document.getElementById("messages").appendChild(div);
+
+  // AUTO SCROLL TO BOTTOM
+  const box = document.getElementById("messages");
+  box.scrollTop = box.scrollHeight;
 });
 
 // ENTER KEY SENDS MESSAGE
@@ -38,7 +44,7 @@ document.getElementById("input").addEventListener("keydown", function(e) {
 
 // AUTO DELETE MESSAGES AFTER 1 HOUR
 setInterval(() => {
-  const cutoff = Date.now() - 3600000;
+  const cutoff = Date.now() - 3600000; // 1 hour
 
   db.ref("messages").once("value", snapshot => {
     snapshot.forEach(child => {
@@ -47,4 +53,4 @@ setInterval(() => {
       }
     });
   });
-}, 60000);
+}, 60000); // runs every minute
