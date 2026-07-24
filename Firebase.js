@@ -3,15 +3,18 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "chat.firebaseapp.com",
-  projectId: "chat",
-  storageBucket: "chat.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
+  const firebaseConfig = {
+      apiKey: "AIzaSyDbcH_OAGxFrfxPRarAnY4PUdAdz-rjymE",
+      authDomain: "chat-ad084.firebaseapp.com",
+      databaseURL: "https://chat-ad084-default-rtdb.firebaseio.com",
+      projectId: "chat-ad084",
+      storageBucket: "chat-ad084.firebasestorage.app",
+      messagingSenderId: "703998786296",
+      appId: "1:703998786296:web:99cabe960b1b00dd1d990d",
+      measurementId: "G-MEVR8MCS49"
+    };
 
-const app = initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
