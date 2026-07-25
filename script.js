@@ -316,7 +316,7 @@ async function acceptRequest(requestID, otherUID) {
 
   loadFriendRequests();
   loadFriends();
-
+  loadGroups();
 }
 
 <div id="chatWindow"></div>
@@ -451,4 +451,76 @@ async function openFriendDM(friendUID) {
   }
 
   openDMRoom(finalRoomID);
+}
+import { doc, setDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { auth, db } from "./firebase.js";
+document.getElementById("createGroupBtn").onclick = async () => {
+  const name = document.getElementById("groupNameInput").value.trim();
+  const uid = auth.currentUser.uid;
+
+  if (!name) {
+    alert("Group name cannot be empty.");
+    return;
+  }
+
+  const roomID = `group_${name}_${Date.now()}`;
+
+  await setDoc(doc(db, "rooms", roomID), {
+    roomID,
+    type: "group",
+    name,
+    members: [uid],
+    createdAt: Date.now()
+  });
+
+  alert("Group created!");
+
+  loadGroups();
+};
+async function loadGroups() {
+  const uid = auth.currentUser.uid;
+
+  const roomsRef = collection(db, "rooms");
+  const q = query(roomsRef, where("type", "==", "group"));
+
+  const snap = await getDocs(q);
+
+  const groups = [];
+
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    if (data.members.includes(uid)) {
+      groups.push(data);
+    }
+  });
+
+  displayGroups(groups);
+}
+function displayGroups(groups) {
+  const container = document.getElementById("groupList");
+  container.innerHTML = "<h3>Your Groups</h3>";
+
+  groups.forEach(group => {
+    container.innerHTML += `
+      <div class="groupItem" onclick="openGroupRoom('${group.roomID}')">
+        ${group.name}
+      </div>
+    `;
+  });
+}
+function openGroupRoom(roomID) {
+  openDMRoom(roomID); // same messaging system
+}
+async function addMemberToGroup(roomID, newUID) {
+  const roomRef = doc(db, "rooms", roomID);
+  const roomSnap = await getDoc(roomRef);
+
+  if (!roomSnap.exists()) return;
+
+  const data = roomSnap.data();
+
+  if (!data.members.includes(newUID)) {
+    data.members.push(newUID);
+    await updateDoc(roomRef, { members: data.members });
+  }
 }
