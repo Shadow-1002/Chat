@@ -315,10 +315,10 @@ async function acceptRequest(requestID, otherUID) {
   alert("Friend request accepted!");
 
   loadFriendRequests();
+  loadFriends();
+
 }
 
-  loadFriendRequests();
-}
 <div id="chatWindow"></div>
 
 <input id="messageInput" placeholder="Type a message">
@@ -380,3 +380,75 @@ document.getElementById("sendMessageBtn").onclick = async () => {
 
   document.getElementById("messageInput").value = "";
 };
+import {
+  collection,
+  query,
+  where,
+  getDocs
+} from "firebase/firestore";
+import { auth, db } from "./firebase.js";
+async function loadFriends() {
+  const uid = auth.currentUser.uid;
+
+  const friendsRef = collection(db, "friends");
+
+  // Find friendships where the user is userA or userB
+  const q1 = query(friendsRef, where("userA", "==", uid));
+  const q2 = query(friendsRef, where("userB", "==", uid));
+
+  const snap1 = await getDocs(q1);
+  const snap2 = await getDocs(q2);
+
+  const friendUIDs = [];
+
+  snap1.forEach(docSnap => friendUIDs.push(docSnap.data().userB));
+  snap2.forEach(docSnap => friendUIDs.push(docSnap.data().userA));
+
+  displayFriends(friendUIDs);
+}
+async function displayFriends(friendUIDs) {
+  const container = document.getElementById("friendsList");
+  container.innerHTML = "";
+
+  for (const fUID of friendUIDs) {
+    const userDoc = await getDocs(
+      query(collection(db, "users"), where("uid", "==", fUID))
+    );
+
+    const username = userDoc.docs[0].data().username;
+
+    container.innerHTML += `
+      <div class="friendItem" onclick="openFriendDM('${fUID}')">
+        ${username}
+      </div>
+    `;
+  }
+}
+async function openFriendDM(friendUID) {
+  const uid = auth.currentUser.uid;
+
+  const roomID = `dm_${uid}_${friendUID}`;
+
+  // If room doesn't exist in this order, try reversed order
+  const reversedRoomID = `dm_${friendUID}_${uid}`;
+
+  const roomsRef = collection(db, "rooms");
+
+  const q1 = query(roomsRef, where("roomID", "==", roomID));
+  const q2 = query(roomsRef, where("roomID", "==", reversedRoomID));
+
+  const snap1 = await getDocs(q1);
+  const snap2 = await getDocs(q2);
+
+  let finalRoomID = null;
+
+  if (!snap1.empty) finalRoomID = roomID;
+  else if (!snap2.empty) finalRoomID = reversedRoomID;
+
+  if (!finalRoomID) {
+    alert("DM room not found.");
+    return;
+  }
+
+  openDMRoom(finalRoomID);
+}
