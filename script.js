@@ -72,3 +72,73 @@ setInterval(() => {
     });
   });
 }, 60000); // runs every minute
+import { auth, db } from "./firebase.js";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from "firebase/auth";
+
+import {
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs
+} from "firebase/firestore";
+document.getElementById("signupBtn").onclick = async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const userCred = await createUserWithEmailAndPassword(auth, email, password);
+  const uid = userCred.user.uid;
+
+  // Show username section
+  document.getElementById("usernameSection").style.display = "block";
+};
+document.getElementById("saveUsernameBtn").onclick = async () => {
+  const username = document.getElementById("username").value.trim();
+  const uid = auth.currentUser.uid;
+
+  // Check if username already exists
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("username", "==", username));
+  const snapshot = await getDocs(q);
+
+  if (!username) {
+    alert("Username cannot be empty.");
+    return;
+  }
+
+  if (!snapshot.empty) {
+    alert("Username already taken.");
+    return;
+  }
+
+  // Save user profile
+  await setDoc(doc(db, "users", uid), {
+    uid,
+    email: auth.currentUser.email,
+    username
+  });
+
+  alert("Username saved!");
+};
+document.getElementById("loginBtn").onclick = async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const userCred = await signInWithEmailAndPassword(auth, email, password);
+  const uid = userCred.user.uid;
+
+  // Check if user already has a username
+  const userDoc = await getDoc(doc(db, "users", uid));
+
+  if (!userDoc.exists()) {
+    // Show username creation
+    document.getElementById("usernameSection").style.display = "block";
+  } else {
+    alert("Logged in!");
+  }
+};
