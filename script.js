@@ -142,3 +142,56 @@ document.getElementById("loginBtn").onclick = async () => {
     alert("Logged in!");
   }
 };
+<input id="searchUsername" placeholder="Search username">
+<button id="searchBtn">Search</button>
+
+<div id="searchResult"></div>
+document.getElementById("searchBtn").onclick = async () => {
+  const name = document.getElementById("searchUsername").value.trim();
+
+  if (!name) {
+    document.getElementById("searchResult").innerText = "Enter a username.";
+    return;
+  }
+
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("username", "==", name));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    document.getElementById("searchResult").innerText = "No user found.";
+    return;
+  }
+
+  // Found user
+  const userData = snapshot.docs[0].data();
+  const foundUID = userData.uid;
+
+  document.getElementById("searchResult").innerHTML = `
+    Found: ${userData.username}
+    <button id="sendRequestBtn">Send Friend Request</button>
+  `;
+
+  setupSendRequest(foundUID);
+};
+function setupSendRequest(targetUID) {
+  document.getElementById("sendRequestBtn").onclick = async () => {
+    const currentUID = auth.currentUser.uid;
+
+    if (currentUID === targetUID) {
+      alert("You cannot add yourself.");
+      return;
+    }
+
+    const requestID = `${currentUID}_${targetUID}`;
+
+    await setDoc(doc(db, "friendRequests", requestID), {
+      from: currentUID,
+      to: targetUID,
+      status: "pending",
+      timestamp: Date.now()
+    });
+
+    alert("Friend request sent!");
+  };
+}
