@@ -23,75 +23,70 @@
   </script>
 
   <style>
-  body { 
-  font-family: Arial; 
-  margin: 0; 
-  padding: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+    body { 
+      font-family: Arial; 
+      margin: 0; 
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-#title {
-  font-size: 40px;
-  text-align: center;
-  margin: 10px 0;
-}
-<div id="sidebar">
-  <h2>Friends</h2>
-  <div id="friendsList"></div>
-</div>
+    #title {
+      font-size: 40px;
+      text-align: center;
+      margin: 10px 0;
+    }
 
-#messages {
-  flex: 1;
-  border: 1px solid #ccc;
-  overflow-y: scroll;
-  padding: 10px;
-  font-size: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+    #messages {
+      flex: 1;
+      border: 1px solid #ccc;
+      overflow-y: scroll;
+      padding: 10px;
+      font-size: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-.bubble {
-  max-width: 70%;
-  padding: 10px 15px;
-  border-radius: 15px;
-  word-wrap: break-word;
-  display: inline-block;
-}
+    .bubble {
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 15px;
+      word-wrap: break-word;
+      display: inline-block;
+    }
 
-.me {
-  background-color: #4da6ff;
-  color: white;
-  align-self: flex-end;
-}
+    .me {
+      background-color: #4da6ff;
+      color: white;
+      align-self: flex-end;
+    }
 
-.other {
-  background-color: #e6e6e6;
-  color: black;
-  align-self: flex-start;
-}
+    .other {
+      background-color: #e6e6e6;
+      color: black;
+      align-self: flex-start;
+    }
 
-#inputRow {
-  display: flex;
-  padding: 10px;
-  gap: 10px;
-  align-items: center;
-}
+    #inputRow {
+      display: flex;
+      padding: 10px;
+      gap: 10px;
+      align-items: center;
+    }
 
-#input {
-  width: 100%;
-  padding: 6px 10px;
-  font-size: 20px;
-  flex: none;
-}
+    #input {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 20px;
+    }
 
-button {
-  padding: 10px 20px;
-  font-size: 20px;
-}
-</style>
+    button {
+      padding: 10px 20px;
+      font-size: 20px;
+    }
+  </style>
 
 </head>
 
@@ -100,21 +95,11 @@ button {
 
   <div id="messages"></div>
 
-  <input id="input" placeholder="Type a message">
-  <button onclick="sendMessage()">Send</button>
+  <div id="inputRow">
+    <input id="input" placeholder="Type a message">
+    <button onclick="sendMessage()">Send</button>
+  </div>
 
   <script src="script.js"></script>
-<h2>Friend Requests</h2>
-
-<div id="incomingRequests"></div>
-<div id="outgoingRequests"></div>
-<h2>Create Group</h2>
-
-<input id="groupNameInput" placeholder="Group name">
-<button id="createGroupBtn">Create Group</button>
-
-<div id="groupList"></div>
-<h2>Admin Panel</h2>
-<div id="adminUserList"></div>
 </body>
 </html>
