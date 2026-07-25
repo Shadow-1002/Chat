@@ -1,9 +1,103 @@
-<input id="email" placeholder="Email">
-<input id="password" placeholder="Password" type="password">
-<button id="signupBtn">Sign Up</button>
-<button id="loginBtn">Log In</button>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login / Sign Up</title>
 
-<div id="usernameSection" style="display:none;">
-  <input id="username" placeholder="Choose a username">
-  <button id="saveUsernameBtn">Save Username</button>
-</div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDbcH_OAGxFrfxPRarAnY4PUdAdz-rjymE",
+      authDomain: "chat-ad084.firebaseapp.com",
+      projectId: "chat-ad084",
+      storageBucket: "chat-ad084.firebasestorage.app",
+      messagingSenderId: "703998786296",
+      appId: "1:703998786296:web:99cabe960b1b00dd1d990d",
+      measurementId: "G-MEVR8MCS49"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
+</head>
+
+<body>
+
+  <input id="email" placeholder="Email">
+  <input id="password" placeholder="Password" type="password">
+  <button id="signupBtn">Sign Up</button>
+  <button id="loginBtn">Log In</button>
+
+  <div id="usernameSection" style="display:none;">
+    <input id="username" placeholder="Choose a username">
+    <button id="saveUsernameBtn">Save Username</button>
+  </div>
+
+  <script>
+    // SIGN UP
+    document.getElementById("signupBtn").onclick = async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const userCred = await auth.createUserWithEmailAndPassword(email, password);
+
+      // Show username section
+      document.getElementById("usernameSection").style.display = "block";
+    };
+
+    // SAVE USERNAME
+    document.getElementById("saveUsernameBtn").onclick = async () => {
+      const username = document.getElementById("username").value.trim();
+      const uid = auth.currentUser.uid;
+
+      if (!username) {
+        alert("Username cannot be empty.");
+        return;
+      }
+
+      // Check if username exists
+      const q = db.collection("users").where("username", "==", username);
+      const snap = await q.get();
+
+      if (!snap.empty) {
+        alert("Username already taken.");
+        return;
+      }
+
+      await db.collection("users").doc(uid).set({
+        uid,
+        email: auth.currentUser.email,
+        username
+      });
+
+      // Redirect to chat
+      window.location.href = "index.html";
+    };
+
+    // LOGIN
+    document.getElementById("loginBtn").onclick = async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const userCred = await auth.signInWithEmailAndPassword(email, password);
+      const uid = userCred.user.uid;
+
+      const userDoc = await db.collection("users").doc(uid).get();
+
+      if (!userDoc.exists()) {
+        // Needs username
+        document.getElementById("usernameSection").style.display = "block";
+      } else {
+        // Redirect to chat
+        window.location.href = "index.html";
+      }
+    };
+  </script>
+
+</body>
+</html>
