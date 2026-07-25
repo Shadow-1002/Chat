@@ -140,6 +140,7 @@ document.getElementById("loginBtn").onclick = async () => {
     document.getElementById("usernameSection").style.display = "block";
   } else {
     alert("Logged in!");
+    loadFriendRequests();
   }
 };
 <input id="searchUsername" placeholder="Search username">
@@ -194,4 +195,90 @@ function setupSendRequest(targetUID) {
 
     alert("Friend request sent!");
   };
+}
+async function loadFriendRequests() {
+  const uid = auth.currentUser.uid;
+
+  const requestsRef = collection(db, "friendRequests");
+
+  // Incoming: to == uid
+  const incomingQ = query(requestsRef, where("to", "==", uid));
+  const incomingSnap = await getDocs(incomingQ);
+
+  // Outgoing: from == uid
+  const outgoingQ = query(requestsRef, where("from", "==", uid));
+  const outgoingSnap = await getDocs(outgoingQ);
+
+  displayIncoming(incomingSnap);
+  displayOutgoing(outgoingSnap);
+}
+async function displayIncoming(snapshot) {
+  const container = document.getElementById("incomingRequests");
+  container.innerHTML = "<h3>Incoming</h3>";
+
+  snapshot.forEach(async (docSnap) => {
+    const data = docSnap.data();
+
+    // Get sender's username
+    const userDoc = await getDocs(
+      query(collection(db, "users"), where("uid", "==", data.from))
+    );
+    const sender = userDoc.docs[0].data().username;
+
+    container.innerHTML += `
+      <div>
+        ${sender} wants to be friends
+        <button onclick="acceptRequest('${docSnap.id}', '${data.from}')">Accept</button>
+        <button onclick="declineRequest('${docSnap.id}')">Decline</button>
+      </div>
+    `;
+  });
+}
+async function displayOutgoing(snapshot) {
+  const container = document.getElementById("outgoingRequests");
+  container.innerHTML = "<h3>Outgoing</h3>";
+
+  snapshot.forEach(async (docSnap) => {
+    const data = docSnap.data();
+
+    // Get receiver's username
+    const userDoc = await getDocs(
+      query(collection(db, "users"), where("uid", "==", data.to))
+    );
+    const receiver = userDoc.docs[0].data().username;
+
+    container.innerHTML += `
+      <div>
+        You sent a request to ${receiver} (pending)
+      </div>
+    `;
+  });
+}
+async function acceptRequest(requestID, otherUID) {
+  const uid = auth.currentUser.uid;
+
+  // Update request status
+  await updateDoc(doc(db, "friendRequests", requestID), {
+    status: "accepted"
+  });
+
+  // Create friendship
+  const friendshipID = `${uid}_${otherUID}`;
+  await setDoc(doc(db, "friends", friendshipID), {
+    userA: uid,
+    userB: otherUID
+  });
+
+  alert("Friend request accepted!");
+
+  loadFriendRequests();
+}
+async function declineRequest(requestID) {
+  await updateDoc(doc(db, "friendRequests", requestID), {
+    status: "declined"
+  });
+
+  alert("Friend request declined.");
+
+  loadFriendRequests();
 }
