@@ -317,8 +317,9 @@ async function acceptRequest(requestID, otherUID) {
   loadFriendRequests();
   loadFriends();
   loadGroups();
+  if (auth.currentUser.email === "davidmatthewwang@gmail.com") {
+  loadAllUsers();
 }
-
 <div id="chatWindow"></div>
 
 <input id="messageInput" placeholder="Type a message">
@@ -523,4 +524,84 @@ async function addMemberToGroup(roomID, newUID) {
     data.members.push(newUID);
     await updateDoc(roomRef, { members: data.members });
   }
+}
+import {
+  collection,
+  getDocs,
+  doc,
+  deleteDoc,
+  query,
+  where
+} from "firebase/firestore";
+import { auth, db } from "./firebase.js";
+async function loadAllUsers() {
+  const usersRef = collection(db, "users");
+  const snapshot = await getDocs(usersRef);
+
+  const container = document.getElementById("adminUserList");
+  container.innerHTML = "<h3>All Users</h3>";
+
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+
+    container.innerHTML += `
+      <div>
+        Username: ${data.username}  
+        Email: ${data.email}
+        <button onclick="kickUser('${data.uid}')">Kick</button>
+      </div>
+    `;
+  });
+}
+async function kickUser(uid) {
+  // Delete user profile
+  await deleteDoc(doc(db, "users", uid));
+
+  // Delete friendships
+  const friendsRef = collection(db, "friends");
+  const friendsSnap = await getDocs(friendsRef);
+
+  friendsSnap.forEach(async (docSnap) => {
+    const data = docSnap.data();
+    if (data.userA === uid || data.userB === uid) {
+      await deleteDoc(doc(db, "friends", docSnap.id));
+    }
+  });
+
+  // Delete friend requests
+  const reqRef = collection(db, "friendRequests");
+  const reqSnap = await getDocs(reqRef);
+
+  reqSnap.forEach(async (docSnap) => {
+    const data = docSnap.data();
+    if (data.from === uid || data.to === uid) {
+      await deleteDoc(doc(db, "friendRequests", docSnap.id));
+    }
+  });
+
+  // Delete DM rooms
+  const roomsRef = collection(db, "rooms");
+  const roomsSnap = await getDocs(roomsRef);
+
+  roomsSnap.forEach(async (docSnap) => {
+    const data = docSnap.data();
+    if (data.members.includes(uid)) {
+      await deleteDoc(doc(db, "rooms", docSnap.id));
+    }
+  });
+
+  // Delete messages
+  const msgRef = collection(db, "messages");
+  const msgSnap = await getDocs(msgRef);
+
+  msgSnap.forEach(async (docSnap) => {
+    const data = docSnap.data();
+    if (data.sender === uid) {
+      await deleteDoc(doc(db, "messages", docSnap.id));
+    }
+  });
+
+  alert("User kicked.");
+
+  loadAllUsers(); // refresh list
 }
