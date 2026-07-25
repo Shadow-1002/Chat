@@ -279,6 +279,43 @@ async function declineRequest(requestID) {
   });
 
   alert("Friend request declined.");
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "./firebase.js";
+
+async function createDMRoom(uidA, uidB) {
+  const roomID = `dm_${uidA}_${uidB}`;
+
+  await setDoc(doc(db, "rooms", roomID), {
+    roomID,
+    type: "dm",
+    members: [uidA, uidB],
+    createdAt: Date.now()
+  });
+
+  return roomID;
+}
+async function acceptRequest(requestID, otherUID) {
+  const uid = auth.currentUser.uid;
+
+  // Update request status
+  await updateDoc(doc(db, "friendRequests", requestID), {
+    status: "accepted"
+  });
+
+  // Create friendship
+  const friendshipID = `${uid}_${otherUID}`;
+  await setDoc(doc(db, "friends", friendshipID), {
+    userA: uid,
+    userB: otherUID
+  });
+
+  // ⭐ Create DM room
+  await createDMRoom(uid, otherUID);
+
+  alert("Friend request accepted!");
+
+  loadFriendRequests();
+}
 
   loadFriendRequests();
 }
