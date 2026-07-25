@@ -319,3 +319,64 @@ async function acceptRequest(requestID, otherUID) {
 
   loadFriendRequests();
 }
+<div id="chatWindow"></div>
+
+<input id="messageInput" placeholder="Type a message">
+<button id="sendMessageBtn">Send</button>
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot
+} from "firebase/firestore";
+import { auth, db } from "./firebase.js";
+let currentRoomID = null;
+
+function openDMRoom(roomID) {
+  currentRoomID = roomID;
+  loadMessages(roomID);
+}
+function loadMessages(roomID) {
+  const messagesRef = collection(db, "messages");
+  const q = query(
+    messagesRef,
+    where("roomID", "==", roomID),
+    orderBy("timestamp", "asc")
+  );
+
+  onSnapshot(q, (snapshot) => {
+    const chatWindow = document.getElementById("chatWindow");
+    chatWindow.innerHTML = "";
+
+    snapshot.forEach((docSnap) => {
+      const msg = docSnap.data();
+      chatWindow.innerHTML += `
+        <div><b>${msg.username}:</b> ${msg.text}</div>
+      `;
+    });
+  });
+}
+document.getElementById("sendMessageBtn").onclick = async () => {
+  const text = document.getElementById("messageInput").value.trim();
+  if (!text || !currentRoomID) return;
+
+  const uid = auth.currentUser.uid;
+
+  // Get username
+  const userDoc = await getDocs(
+    query(collection(db, "users"), where("uid", "==", uid))
+  );
+  const username = userDoc.docs[0].data().username;
+
+  await addDoc(collection(db, "messages"), {
+    roomID: currentRoomID,
+    sender: uid,
+    username,
+    text,
+    timestamp: Date.now()
+  });
+
+  document.getElementById("messageInput").value = "";
+};
