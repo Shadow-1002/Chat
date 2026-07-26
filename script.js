@@ -31,7 +31,6 @@ realtimeDB.ref("messages").on("child_added", snapshot => {
   const div = document.createElement("div");
   div.classList.add("bubble");
 
-  // username label
   const nameSpan = document.createElement("div");
   nameSpan.style.fontSize = "14px";
   nameSpan.style.marginBottom = "4px";
@@ -52,7 +51,6 @@ realtimeDB.ref("messages").on("child_added", snapshot => {
 
   document.getElementById("messages").appendChild(div);
 
-  // AUTO SCROLL TO BOTTOM
   const box = document.getElementById("messages");
   box.scrollTop = box.scrollHeight;
 });
@@ -66,7 +64,7 @@ document.getElementById("input").addEventListener("keydown", function(e) {
 
 // AUTO DELETE MESSAGES AFTER 1 HOUR
 setInterval(() => {
-  const cutoff = Date.now() - 3600000; // 1 hour
+  const cutoff = Date.now() - 3600000;
 
   realtimeDB.ref("messages").once("value", snapshot => {
     snapshot.forEach(child => {
@@ -75,89 +73,4 @@ setInterval(() => {
       }
     });
   });
-}, 60000); // runs every minute
-
-
-
-/* ============================
-   FIRESTORE AUTH + USERNAME
-   ============================ */
-
-import { auth, db } from "./firebase.js";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
-} from "firebase/auth";
-
-import {
-  doc,
-  setDoc,
-  getDoc,
-  collection,
-  query,
-  where,
-  getDocs
-} from "firebase/firestore";
-
-
-// SIGN UP
-document.getElementById("signupBtn").onclick = async () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  const userCred = await createUserWithEmailAndPassword(auth, email, password);
-
-  // Show username section
-  document.getElementById("usernameSection").style.display = "block";
-};
-
-
-// SAVE USERNAME
-document.getElementById("saveUsernameBtn").onclick = async () => {
-  const username = document.getElementById("username").value.trim();
-  const uid = auth.currentUser.uid;
-
-  // Check if username already exists
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, where("username", "==", username));
-  const snapshot = await getDocs(q);
-
-  if (!username) {
-    alert("Username cannot be empty.");
-    return;
-  }
-
-  if (!snapshot.empty) {
-    alert("Username already taken.");
-    return;
-  }
-
-  // Save user profile
-  await setDoc(doc(db, "users", uid), {
-    uid,
-    email: auth.currentUser.email,
-    username
-  });
-
-  alert("Username saved!");
-};
-
-
-// LOGIN
-document.getElementById("loginBtn").onclick = async () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  const userCred = await signInWithEmailAndPassword(auth, email, password);
-  const uid = userCred.user.uid;
-
-  // Check if user already has a username
-  const userDoc = await getDoc(doc(db, "users", uid));
-
-  if (!userDoc.exists()) {
-    // Show username creation
-    document.getElementById("usernameSection").style.display = "block";
-  } else {
-    alert("Logged in!");
-  }
-};
+}, 60000);
