@@ -1,4 +1,4 @@
-// Firebase v8 initialization (matches your index.html)
+// Firebase v8 initialization
 
 const firebaseConfig = {
   apiKey: "AIzaSyDbcH_OAGxFrfxPRarAnY4PUdAdz-rjymE",
@@ -11,9 +11,4 @@ const firebaseConfig = {
   measurementId: "G-MEVR8MCS49"
 };
 
-// Initialize Firebase (v8)
 firebase.initializeApp(firebaseConfig);
-
-// Export v8 services
-export const auth = firebase.auth();
-export const db = firebase.firestore();
