@@ -1,6 +1,4 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+// Firebase v8 initialization (matches your index.html)
 
 const firebaseConfig = {
   apiKey: "AIzaSyDbcH_OAGxFrfxPRarAnY4PUdAdz-rjymE",
@@ -13,9 +11,9 @@ const firebaseConfig = {
   measurementId: "G-MEVR8MCS49"
 };
 
-// Initialize Firebase (v9 syntax)
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase (v8)
+firebase.initializeApp(firebaseConfig);
 
-// Export services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Export v8 services
+export const auth = firebase.auth();
+export const db = firebase.firestore();
