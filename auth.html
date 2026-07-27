@@ -46,6 +46,7 @@
 
       const userCred = await auth.createUserWithEmailAndPassword(email, password);
 
+      // Show username section
       document.getElementById("usernameSection").style.display = "block";
     };
 
@@ -59,6 +60,7 @@
         return;
       }
 
+      // Check if username exists
       const q = db.collection("users").where("username", "==", username);
       const snap = await q.get();
 
@@ -67,12 +69,18 @@
         return;
       }
 
+      // Save user profile
       await db.collection("users").doc(uid).set({
         uid,
         email: auth.currentUser.email,
         username
       });
 
+      // Save to localStorage for chat page
+      localStorage.setItem("username", username);
+      localStorage.setItem("email", auth.currentUser.email);
+
+      // Redirect to chat
       window.location.href = "index.html";
     };
 
@@ -87,8 +95,14 @@
       const userDoc = await db.collection("users").doc(uid).get();
 
       if (!userDoc.exists()) {
+        // Needs username
         document.getElementById("usernameSection").style.display = "block";
       } else {
+        // Save username + email
+        localStorage.setItem("username", userDoc.data().username);
+        localStorage.setItem("email", auth.currentUser.email);
+
+        // Redirect to chat
         window.location.href = "index.html";
       }
     };
