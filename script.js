@@ -32,7 +32,7 @@ realtimeDB.ref("messages").on("child_added", snapshot => {
   div.classList.add("bubble");
 
   const nameSpan = document.createElement("div");
-  nameSpan.style.fontSize = "20px";
+  nameSpan.style.fontSize = "25px";
   nameSpan.style.marginBottom = "4px";
   nameSpan.style.opacity = "0.7";
   nameSpan.textContent = msg.user || "Unknown";
