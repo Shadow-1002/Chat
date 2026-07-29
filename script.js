@@ -10,12 +10,6 @@ if (!myName || !myEmail) {
 
 const realtimeDB = firebase.database();
 
-// ASK FOR USERNAME WHEN PAGE LOADS
-let myName = prompt("Enter your username:");
-if (!myName || myName.trim() === "") {
-  myName = "Unknown";
-}
-
 // SEND MESSAGE
 function sendMessage() {
   const text = document.getElementById("input").value;
