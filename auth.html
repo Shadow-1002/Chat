@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login / Sign Up</title>
+  <title>ChatterBox Login</title>
 
   <!-- Firebase v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -11,36 +11,100 @@
 
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyDbcH_OAGxFrfxPRarAnY4PUdAdz-rjymE",
-  authDomain: "chat-ad084.firebaseapp.com",
-  databaseURL: "https://chat-ad084-default-rtdb.firebaseio.com",
-  projectId: "chat-ad084",
-  storageBucket: "chat-ad084.firebasestorage.app",
-  messagingSenderId: "703998786296",
-  appId: "1:703998786296:web:99cabe960b1b00dd1d990d",
-  measurementId: "G-MEVR8MCS49"
-};
-
+      apiKey: "AIzaSyDbcH_OAGxFrfxPRarAnY4PUdAdz-rjymE",
+      authDomain: "chat-ad084.firebaseapp.com",
+      databaseURL: "https://chat-ad084-default-rtdb.firebaseio.com",
+      projectId: "chat-ad084",
+      storageBucket: "chat-ad084.firebasestorage.app",
+      messagingSenderId: "703998786296",
+      appId: "1:703998786296:web:99cabe960b1b00dd1d990d",
+      measurementId: "G-MEVR8MCS49"
+    };
 
     firebase.initializeApp(firebaseConfig);
 
     const auth = firebase.auth();
     const db = firebase.firestore();
   </script>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f2f2f2;
+      font-family: Arial;
+    }
+
+    #card {
+      background: white;
+      padding: 40px;
+      width: 400px;
+      border-radius: 15px;
+      box-shadow: 0px 0px 20px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      text-align: center;
+    }
+
+    #card h1 {
+      margin: 0;
+      font-size: 36px;
+    }
+
+    input {
+      padding: 14px;
+      font-size: 20px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+
+    button {
+      padding: 14px;
+      font-size: 22px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: #4da6ff;
+      color: white;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #3399ff;
+    }
+
+    #usernameSection {
+      display: none;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    #usernameSection input {
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h1>Welcome to ChatterBox</h1>
+  <div id="card">
+    <h1>ChatterBox</h1>
 
-  <input id="email" placeholder="Email">
-  <input id="password" placeholder="Password" type="password">
-  <button id="signupBtn">Sign Up</button>
-  <button id="loginBtn">Log In</button>
+    <input id="email" placeholder="Email">
+    <input id="password" placeholder="Password" type="password">
 
-  <div id="usernameSection" style="display:none;">
-    <input id="username" placeholder="Choose a username">
-    <button id="saveUsernameBtn">Save Username</button>
+    <button id="signupBtn">Sign Up</button>
+    <button id="loginBtn">Log In</button>
+
+    <div id="usernameSection">
+      <input id="username" placeholder="Choose a username">
+      <button id="saveUsernameBtn">Save Username</button>
+    </div>
   </div>
 
   <script>
@@ -49,9 +113,12 @@
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      await auth.createUserWithEmailAndPassword(email, password);
-
-      document.getElementById("usernameSection").style.display = "block";
+      try {
+        await auth.createUserWithEmailAndPassword(email, password);
+        document.getElementById("usernameSection").style.display = "block";
+      } catch (err) {
+        alert("Signup error: " + err.message);
+      }
     };
 
     // SAVE USERNAME
@@ -89,18 +156,22 @@
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
-      const userCred = await auth.signInWithEmailAndPassword(email, password);
-      const uid = userCred.user.uid;
+      try {
+        const userCred = await auth.signInWithEmailAndPassword(email, password);
+        const uid = userCred.user.uid;
 
-      const userDoc = await db.collection("users").doc(uid).get();
+        const userDoc = await db.collection("users").doc(uid).get();
 
-      if (!userDoc.exists()) {
-        document.getElementById("usernameSection").style.display = "block";
-      } else {
-        localStorage.setItem("username", userDoc.data().username);
-        localStorage.setItem("email", auth.currentUser.email);
+        if (!userDoc.exists()) {
+          document.getElementById("usernameSection").style.display = "block";
+        } else {
+          localStorage.setItem("username", userDoc.data().username);
+          localStorage.setItem("email", auth.currentUser.email);
 
-        window.location.href = "index.html";
+          window.location.href = "index.html";
+        }
+      } catch (err) {
+        alert("Login error: " + err.message);
       }
     };
   </script>
