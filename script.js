@@ -1,10 +1,10 @@
 /* ============================
    REALTIME DATABASE CHAT SYSTEM
    ============================ */
-let myName = localStorage.getItem("username");
-let myEmail = localStorage.getItem("email");
 
-if (!myName || !myEmail) {
+let myName = localStorage.getItem("username");
+
+if (!myName) {
   window.location.href = "auth.html";
 }
 
@@ -24,7 +24,7 @@ function sendMessage() {
   document.getElementById("input").value = "";
 }
 
-// DISPLAY MESSAGES WITH BUBBLES + USERNAMES
+// DISPLAY MESSAGES
 realtimeDB.ref("messages").on("child_added", snapshot => {
   const msg = snapshot.val();
 
@@ -32,10 +32,10 @@ realtimeDB.ref("messages").on("child_added", snapshot => {
   div.classList.add("bubble");
 
   const nameSpan = document.createElement("div");
-  nameSpan.style.fontSize = "25px";
+  nameSpan.style.fontSize = "22px";
   nameSpan.style.marginBottom = "4px";
   nameSpan.style.opacity = "0.7";
-  nameSpan.textContent = msg.user || "Unknown";
+  nameSpan.textContent = msg.user;
 
   const textSpan = document.createElement("div");
   textSpan.textContent = msg.text;
@@ -48,15 +48,6 @@ realtimeDB.ref("messages").on("child_added", snapshot => {
   } else {
     div.classList.add("other");
   }
-
-  // ⭐ ADMIN EMAIL REVEAL
-  const ADMIN_EMAIL = "davidmatthewwang@gmail.com";   // <-- replace with your real email
-
-  div.onclick = () => {
-    if (myEmail === ADMIN_EMAIL) {
-      alert("Email: " + msg.email);
-    }
-  };
 
   document.getElementById("messages").appendChild(div);
 
@@ -71,6 +62,9 @@ document.getElementById("input").addEventListener("keydown", function(e) {
   }
 });
 
+// SEND BUTTON
+document.getElementById("sendBtn").onclick = sendMessage;
+
 // AUTO DELETE MESSAGES AFTER 1 HOUR
 setInterval(() => {
   const cutoff = Date.now() - 3600000;
@@ -83,24 +77,3 @@ setInterval(() => {
     });
   });
 }, 60000);
-
-// SIDEBAR BUTTON ACTIONS
-document.getElementById("addFriendBtn").onclick = () => {
-  alert("Add Friend clicked");
-};
-
-document.getElementById("friendsListBtn").onclick = () => {
-  alert("Friends List clicked");
-};
-
-document.getElementById("addChatBtn").onclick = () => {
-  alert("Add Chat clicked");
-};
-
-document.getElementById("chatListBtn").onclick = () => {
-  alert("Chats clicked");
-};
-
-document.getElementById("settingsBtn").onclick = () => {
-  alert("Settings clicked");
-};
