@@ -1,9 +1,7 @@
-/* ============================
-   REALTIME DATABASE CHAT SYSTEM
-   ============================ */
-
+// Username-only login system
 let myName = localStorage.getItem("username");
 
+// If not logged in → go to login page
 if (!myName) {
   window.location.href = "auth.html";
 }
@@ -31,17 +29,17 @@ realtimeDB.ref("messages").on("child_added", snapshot => {
   const div = document.createElement("div");
   div.classList.add("bubble");
 
-  const nameSpan = document.createElement("div");
-  nameSpan.style.fontSize = "22px";
-  nameSpan.style.marginBottom = "4px";
-  nameSpan.style.opacity = "0.7";
-  nameSpan.textContent = msg.user;
+  const nameTag = document.createElement("div");
+  nameTag.style.fontSize = "22px";
+  nameTag.style.opacity = "0.7";
+  nameTag.style.marginBottom = "4px";
+  nameTag.textContent = msg.user;
 
-  const textSpan = document.createElement("div");
-  textSpan.textContent = msg.text;
+  const textTag = document.createElement("div");
+  textTag.textContent = msg.text;
 
-  div.appendChild(nameSpan);
-  div.appendChild(textSpan);
+  div.appendChild(nameTag);
+  div.appendChild(textTag);
 
   if (msg.user === myName) {
     div.classList.add("me");
@@ -61,9 +59,6 @@ document.getElementById("input").addEventListener("keydown", function(e) {
     sendMessage();
   }
 });
-
-// SEND BUTTON
-document.getElementById("sendBtn").onclick = sendMessage;
 
 // AUTO DELETE MESSAGES AFTER 1 HOUR
 setInterval(() => {
