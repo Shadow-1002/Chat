@@ -89,3 +89,24 @@ setInterval(() => {
     });
   });
 }, 60000);
+
+// SIDEBAR BUTTON ACTIONS
+document.getElementById("addFriendBtn").onclick = () => {
+  alert("Add Friend clicked");
+};
+
+document.getElementById("friendsListBtn").onclick = () => {
+  alert("Friends List clicked");
+};
+
+document.getElementById("addChatBtn").onclick = () => {
+  alert("Add Chat clicked");
+};
+
+document.getElementById("chatListBtn").onclick = () => {
+  alert("Chats clicked");
+};
+
+document.getElementById("settingsBtn").onclick = () => {
+  alert("Settings clicked");
+};
