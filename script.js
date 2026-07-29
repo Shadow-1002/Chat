@@ -56,7 +56,7 @@ realtimeDB.ref("messages").on("child_added", snapshot => {
   }
 
   // ⭐ ADMIN EMAIL REVEAL
-  const ADMIN_EMAIL = "YOUR_EMAIL_HERE";   // <-- replace with your real email
+  const ADMIN_EMAIL = "davidmatthewwang@gmail.com";   // <-- replace with your real email
 
   div.onclick = () => {
     if (myEmail === ADMIN_EMAIL) {
