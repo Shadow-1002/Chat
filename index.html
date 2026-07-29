@@ -29,7 +29,51 @@
       padding: 0;
       height: 100vh;
       display: flex;
+      flex-direction: row; /* sidebar + chat */
+    }
+
+    /* SIDEBAR */
+    #sidebar {
+      width: 250px;
+      background: #333;
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
       flex-direction: column;
+      gap: 20px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+    }
+
+    #sidebar h2 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    #sidebar button {
+      padding: 12px;
+      font-size: 22px;
+      border: none;
+      border-radius: 8px;
+      background: #4da6ff;
+      color: white;
+      cursor: pointer;
+    }
+
+    #sidebar button:hover {
+      background: #3399ff;
+    }
+
+    /* CHAT AREA */
+    #chatArea {
+      margin-left: 250px; /* make space for sidebar */
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: calc(100% - 250px);
     }
 
     #title {
@@ -93,13 +137,24 @@
 </head>
 
 <body>
-  <h1 id="title">ChatterBox</h1>
 
-  <div id="messages"></div>
+  <!-- FIXED LEFT SIDEBAR -->
+  <div id="sidebar">
+    <h2>Menu</h2>
+    <button onclick="logout()">Logout</button>
+    <button onclick="clearChat()">Clear Chat</button>
+  </div>
 
-  <div id="inputRow">
-    <input id="input" placeholder="Type a message">
-    <button onclick="sendMessage()">Send</button>
+  <!-- CHAT AREA -->
+  <div id="chatArea">
+    <h1 id="title">ChatterBox</h1>
+
+    <div id="messages"></div>
+
+    <div id="inputRow">
+      <input id="input" placeholder="Type a message">
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
 
   <script src="script.js"></script>
