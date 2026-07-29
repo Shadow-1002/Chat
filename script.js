@@ -72,3 +72,14 @@ setInterval(() => {
     });
   });
 }, 60000);
+
+function logout() {
+  localStorage.removeItem("username");
+  window.location.href = "auth.html";
+}
+
+function clearChat() {
+  if (confirm("Clear all messages?")) {
+    firebase.database().ref("messages").remove();
+  }
+}
