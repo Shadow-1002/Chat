@@ -23,11 +23,48 @@
   </script>
 
   <style>
-    body { 
-      font-family: Arial; 
-      margin: 0; 
-      padding: 0;
+    /* PAGE LAYOUT */
+    body {
+      display: flex;
+      margin: 0;
       height: 100vh;
+      font-family: Arial;
+    }
+
+    /* SIDEBAR */
+    #sidebar {
+      width: 250px;
+      background: #222;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    #sidebar h2 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+    }
+
+    .sideBtn {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 20px;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .sideBtn:hover {
+      background: #555;
+    }
+
+    /* CHAT AREA */
+    #chatContainer {
+      flex: 1;
       display: flex;
       flex-direction: column;
     }
@@ -77,106 +114,45 @@
     }
 
     #input {
-  width: 100%;
-  padding: 14px 16px;
-  font-size: 30px;
-  border-radius: 10px;
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 30px;
+      border-radius: 10px;
     }
 
     button {
-  padding: 14px 26px;   /* matches input height */
-  font-size: 30px;      /* matches input text size */
-  border-radius: 10px;  /* same rounded corners */
+      padding: 14px 26px;
+      font-size: 30px;
+      border-radius: 10px;
     }
-  /* PAGE LAYOUT */
-body {
-  display: flex;
-  margin: 0;
-  height: 100vh;
-  font-family: Arial;
-}
-
-/* SIDEBAR */
-#sidebar {
-  width: 250px;
-  background: #222;
-  color: white;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-#sidebar h2 {
-  margin: 0 0 10px 0;
-  font-size: 28px;
-}
-
-.sideBtn {
-  background: #444;
-  color: white;
-  border: none;
-  padding: 12px;
-  font-size: 20px;
-  border-radius: 8px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.sideBtn:hover {
-  background: #555;
-}
-
-/* CHAT AREA */
-#chatContainer {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-#messages {
-  flex: 1;
-  overflow-y: scroll;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
   </style>
 
 </head>
 
 <body>
-  <h1 id="title">ChatterBox</h1>
 
-  <div id="messages"></div>
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <h2>Menu</h2>
 
-  <div id="inputRow">
-    <input id="input" placeholder="Type a message">
-    <button onclick="sendMessage()">Send</button>
+    <button class="sideBtn" id="addFriendBtn">Add Friend</button>
+    <button class="sideBtn" id="friendsListBtn">Friends List</button>
+    <button class="sideBtn" id="addChatBtn">Add Chat</button>
+    <button class="sideBtn" id="chatListBtn">Chats</button>
+    <button class="sideBtn" id="settingsBtn">Settings</button>
   </div>
-  
-<div id="sidebar">
-  <h2>Menu</h2>
 
-  <button class="sideBtn" id="addFriendBtn">Add Friend</button>
-  <button class="sideBtn" id="friendsListBtn">Friends List</button>
-  <button class="sideBtn" id="addChatBtn">Add Chat</button>
-  <button class="sideBtn" id="chatListBtn">Chats</button>
-  <button class="sideBtn" id="settingsBtn">Settings</button>
-</div>
+  <!-- CHAT AREA -->
+  <div id="chatContainer">
+    <h1 id="title">ChatterBox</h1>
 
-<div id="chatContainer">
-  <h1 id="title">ChatterBox</h1>
+    <div id="messages"></div>
 
-  <div id="messages"></div>
-
-  <div id="inputRow">
-    <input id="input" placeholder="Type a message">
-    <button onclick="sendMessage()">Send</button>
+    <div id="inputRow">
+      <input id="input" placeholder="Type a message">
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
-</div>
 
   <script src="script.js"></script>
 </body>
