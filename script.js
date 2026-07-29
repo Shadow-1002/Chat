@@ -1,6 +1,12 @@
 /* ============================
    REALTIME DATABASE CHAT SYSTEM
    ============================ */
+let myName = localStorage.getItem("username");
+let myEmail = localStorage.getItem("email");
+
+if (!myName || !myEmail) {
+  window.location.href = "auth.html";
+}
 
 const realtimeDB = firebase.database();
 
@@ -48,6 +54,15 @@ realtimeDB.ref("messages").on("child_added", snapshot => {
   } else {
     div.classList.add("other");
   }
+
+  // ⭐ ADMIN EMAIL REVEAL
+  const ADMIN_EMAIL = "YOUR_EMAIL_HERE";   // <-- replace with your real email
+
+  div.onclick = () => {
+    if (myEmail === ADMIN_EMAIL) {
+      alert("Email: " + msg.email);
+    }
+  };
 
   document.getElementById("messages").appendChild(div);
 
