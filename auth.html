@@ -5,7 +5,6 @@
 
   <!-- Firebase v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <script>
@@ -74,11 +73,6 @@
     button:hover {
       background: #3399ff;
     }
-
-    #usernameSection {
-      display: none;
-      margin-top: 20px;
-    }
   </style>
 </head>
 
@@ -87,96 +81,71 @@
   <div id="card">
     <h1>ChatterBox</h1>
 
-    <input id="email" placeholder="Email">
+    <input id="username" placeholder="Username">
     <input id="password" placeholder="Password" type="password">
 
     <button id="signupBtn">Sign Up</button>
     <button id="loginBtn">Log In</button>
-
-    <div id="usernameSection">
-      <input id="username" placeholder="Choose a username">
-      <button id="saveUsernameBtn">Save Username</button>
-    </div>
   </div>
 
   <script>
-    const auth = firebase.auth();
     const realtimeDB = firebase.database();
 
     // SIGN UP
     document.getElementById("signupBtn").onclick = async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        document.getElementById("usernameSection").style.display = "block";
-      } catch (err) {
-        alert("Signup error: " + err.message);
-      }
-    };
-
-    // SAVE USERNAME
-    document.getElementById("saveUsernameBtn").onclick = async () => {
       const username = document.getElementById("username").value.trim();
-      const uid = auth.currentUser.uid;
+      const password = document.getElementById("password").value.trim();
 
-      if (!username) {
-        alert("Username cannot be empty.");
+      if (!username || !password) {
+        alert("Username and password required.");
         return;
       }
 
-      // Check if username is taken
-      const allUsers = await realtimeDB.ref("users").get();
-      let taken = false;
-
-      allUsers.forEach(child => {
-        if (child.val().username === username) {
-          taken = true;
-        }
-      });
-
-      if (taken) {
+      // Check if username exists
+      const snap = await realtimeDB.ref("users/" + username).get();
+      if (snap.exists()) {
         alert("Username already taken.");
         return;
       }
 
-      // Save user
-      await realtimeDB.ref("users/" + uid).set({
-        uid: uid,
-        email: auth.currentUser.email,
-        username: username
+      // Create user
+      await realtimeDB.ref("users/" + username).set({
+        username: username,
+        password: password
       });
 
       localStorage.setItem("username", username);
-      localStorage.setItem("email", auth.currentUser.email);
 
       window.location.href = "index.html";
     };
 
     // LOGIN
     document.getElementById("loginBtn").onclick = async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-      try {
-        const userCred = await auth.signInWithEmailAndPassword(email, password);
-        const uid = userCred.user.uid;
-
-        const snap = await realtimeDB.ref("users/" + uid).get();
-
-        if (!snap.exists()) {
-          document.getElementById("usernameSection").style.display = "block";
-        } else {
-          const data = snap.val();
-          localStorage.setItem("username", data.username);
-          localStorage.setItem("email", data.email);
-
-          window.location.href = "index.html";
-        }
-      } catch (err) {
-        alert("Login error: " + err.message);
+      if (!username || !password) {
+        alert("Username and password required.");
+        return;
       }
+
+      const snap = await realtimeDB.ref("users/" + username).get();
+
+      if (!snap.exists()) {
+        alert("User not found.");
+        return;
+      }
+
+      const data = snap.val();
+
+      if (data.password !== password) {
+        alert("Incorrect password.");
+        return;
+      }
+
+      localStorage.setItem("username", username);
+
+      window.location.href = "index.html";
     };
   </script>
 
