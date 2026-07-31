@@ -132,6 +132,38 @@
       font-size: 30px;
       border-radius: 10px;
     }
+
+    #addFriendBox {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#friendSearchInput {
+  padding: 10px;
+  font-size: 20px;
+  border-radius: 6px;
+  width: 100%;
+}
+
+#friendsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friendItem {
+  background: #444;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.friendItem:hover {
+  background: #555;
+}
   </style>
 
 </head>
@@ -139,11 +171,24 @@
 <body>
 
   <!-- FIXED LEFT SIDEBAR -->
-  <div id="sidebar">
-    <h2>Menu</h2>
-    <button onclick="logout()">Logout</button>
-    <button onclick="clearChat()">Clear Chat</button>
+ <!-- FIXED LEFT SIDEBAR -->
+<div id="sidebar">
+  <h2>Menu</h2>
+
+  <button onclick="logout()">Logout</button>
+  <button onclick="clearChat()">Clear Chat</button>
+
+  <!-- ADD FRIEND SECTION -->
+  <div id="addFriendBox">
+    <input id="friendSearchInput" placeholder="Search username">
+    <button onclick="addFriend(localStorage.getItem('username'), document.getElementById('friendSearchInput').value.trim())">
+      Add Friend
+    </button>
   </div>
+
+  <h3>Your Friends</h3>
+  <div id="friendsList"></div>
+</div>
 
   <!-- CHAT AREA -->
   <div id="chatArea">
