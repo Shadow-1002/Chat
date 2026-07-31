@@ -8,7 +8,9 @@ if (!myName) {
 
 const realtimeDB = firebase.database();
 
-// SEND MESSAGE
+/* --------------------------------------------------
+   SEND MESSAGE (GLOBAL CHAT)
+-------------------------------------------------- */
 function sendMessage() {
   const text = document.getElementById("input").value;
   if (text.trim() === "") return;
@@ -22,7 +24,9 @@ function sendMessage() {
   document.getElementById("input").value = "";
 }
 
-// DISPLAY MESSAGES
+/* --------------------------------------------------
+   DISPLAY MESSAGES
+-------------------------------------------------- */
 realtimeDB.ref("messages").on("child_added", snapshot => {
   const msg = snapshot.val();
 
@@ -53,14 +57,18 @@ realtimeDB.ref("messages").on("child_added", snapshot => {
   box.scrollTop = box.scrollHeight;
 });
 
-// ENTER KEY SENDS MESSAGE
+/* --------------------------------------------------
+   ENTER KEY SENDS MESSAGE
+-------------------------------------------------- */
 document.getElementById("input").addEventListener("keydown", function(e) {
   if (e.key === "Enter") {
     sendMessage();
   }
 });
 
-// AUTO DELETE MESSAGES AFTER 1 HOUR
+/* --------------------------------------------------
+   AUTO DELETE MESSAGES AFTER 1 HOUR
+-------------------------------------------------- */
 setInterval(() => {
   const cutoff = Date.now() - 3600000;
 
@@ -73,13 +81,83 @@ setInterval(() => {
   });
 }, 60000);
 
+/* --------------------------------------------------
+   LOGOUT
+-------------------------------------------------- */
 function logout() {
   localStorage.removeItem("username");
   window.location.href = "auth.html";
 }
 
+/* --------------------------------------------------
+   CLEAR CHAT
+-------------------------------------------------- */
 function clearChat() {
   if (confirm("Clear all messages?")) {
     firebase.database().ref("messages").remove();
   }
 }
+
+/* --------------------------------------------------
+   FRIEND SYSTEM
+-------------------------------------------------- */
+
+// Search for a user
+async function searchUser(username) {
+  const snap = await firebase.database().ref("users/" + username).get();
+  return snap.exists();
+}
+
+// Add friend (no auto chat creation)
+async function addFriend(myUsername, friendUsername) {
+  if (!friendUsername) {
+    alert("Enter a username.");
+    return;
+  }
+
+  if (myUsername === friendUsername) {
+    alert("You can't add yourself.");
+    return;
+  }
+
+  const exists = await searchUser(friendUsername);
+  if (!exists) {
+    alert("User not found.");
+    return;
+  }
+
+  const db = firebase.database();
+
+  // Add friend to me
+  await db.ref("users/" + myUsername + "/friends/" + friendUsername).set(true);
+
+  // Add me to friend
+  await db.ref("users/" + friendUsername + "/friends/" + myUsername).set(true);
+
+  alert("Friend added!");
+}
+
+// Load friends into sidebar
+function loadFriends(username) {
+  firebase.database().ref("users/" + username + "/friends")
+    .on("value", snap => {
+      const friends = snap.val() || {};
+      const list = document.getElementById("friendsList");
+      list.innerHTML = "";
+
+      Object.keys(friends).forEach(friend => {
+        const div = document.createElement("div");
+        div.className = "friendItem";
+        div.textContent = friend;
+
+        div.onclick = () => {
+          alert("Clicked friend: " + friend);
+        };
+
+        list.appendChild(div);
+      });
+    });
+}
+
+// Load friend list on page load
+loadFriends(myName);
