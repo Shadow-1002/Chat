@@ -29,7 +29,7 @@
       padding: 0;
       height: 100vh;
       display: flex;
-      flex-direction: row; /* sidebar + chat */
+      flex-direction: row;
     }
 
     /* SIDEBAR */
@@ -46,6 +46,7 @@
       left: 0;
       top: 0;
       bottom: 0;
+      overflow-y: auto;
     }
 
     #sidebar h2 {
@@ -67,17 +68,24 @@
       background: #3399ff;
     }
 
+    .sidebarSectionTitle {
+      font-size: 26px;
+      font-weight: bold;
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+
     /* CHAT AREA */
     #chatArea {
-      margin-left: 250px; /* make space for sidebar */
+      margin-left: 250px;
       display: flex;
       flex-direction: column;
       height: 100vh;
       width: calc(100% - 250px);
     }
 
-    #title {
-      font-size: 60px;
+    #chatHeader {
+      font-size: 40px;
       text-align: center;
       margin: 10px 0;
     }
@@ -133,71 +141,72 @@
       border-radius: 10px;
     }
 
+    /* FRIENDS + CHATS */
+    #friendsList, #chatsList {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .friendItem, .chatItem {
+      background: #444;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .friendItem:hover, .chatItem:hover {
+      background: #555;
+    }
+
+    /* ADD FRIEND BOX */
     #addFriendBox {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-#friendSearchInput {
-  padding: 10px;
-  font-size: 20px;
-  border-radius: 6px;
-  width: 100%;
-}
-
-#friendsList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.friendItem {
-  background: #444;
-  padding: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 20px;
-}
-
-.friendItem:hover {
-  background: #555;
-}
-#addFriendBox input,
-#addFriendBox button {
-  width: 100%;
-  box-sizing: border-box;
-}
+    #friendSearchInput {
+      padding: 10px;
+      font-size: 20px;
+      border-radius: 6px;
+      width: 100%;
+    }
   </style>
 
 </head>
 
 <body>
 
-  <!-- FIXED LEFT SIDEBAR -->
- <!-- FIXED LEFT SIDEBAR -->
-<div id="sidebar">
-  <h2>Menu</h2>
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar">
+    <h2>Menu</h2>
 
-  <button onclick="logout()">Logout</button>
-  <button onclick="clearChat()">Clear Chat</button>
+    <button onclick="logout()">Logout</button>
+    <button onclick="clearChat()">Clear Chat</button>
 
-  <!-- ADD FRIEND SECTION -->
-  <div id="addFriendBox">
-    <input id="friendSearchInput" placeholder="Search username">
-    <button onclick="addFriend(localStorage.getItem('username'), document.getElementById('friendSearchInput').value.trim())">
-      Add Friend
-    </button>
+    <!-- ADD FRIEND SECTION -->
+    <div id="addFriendBox">
+      <input id="friendSearchInput" placeholder="Search username">
+      <button onclick="addFriend(localStorage.getItem('username'), document.getElementById('friendSearchInput').value.trim())">
+        Add Friend
+      </button>
+    </div>
+
+    <!-- CHATS SECTION -->
+    <div class="sidebarSectionTitle">Chats</div>
+    <div id="chatsList"></div>
+
+    <!-- FRIENDS SECTION -->
+    <div class="sidebarSectionTitle">Friends</div>
+    <div id="friendsList"></div>
   </div>
-
-  <h3>Your Friends</h3>
-  <div id="friendsList"></div>
-</div>
 
   <!-- CHAT AREA -->
   <div id="chatArea">
-    <h1 id="title">ChatterBox</h1>
+    <div id="chatHeader">Global Chat</div>
 
     <div id="messages"></div>
 
