@@ -41,19 +41,26 @@
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 20px;
       position: fixed;
       left: 0;
       top: 0;
       bottom: 0;
-      overflow-y: auto;
     }
 
     #sidebar h2 {
       margin: 0;
       font-size: 32px;
+      margin-bottom: 10px;
     }
 
+    .sidebarSectionTitle {
+      font-size: 26px;
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* BUTTONS */
     #sidebar button {
       padding: 12px;
       font-size: 22px;
@@ -62,17 +69,86 @@
       background: #4da6ff;
       color: white;
       cursor: pointer;
+      margin-bottom: 10px;
     }
 
     #sidebar button:hover {
       background: #3399ff;
     }
 
-    .sidebarSectionTitle {
-      font-size: 26px;
-      font-weight: bold;
+    /* FRIENDS + CHATS LIST */
+    #friendsList, #chatsList {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .friendItem, .chatItem {
+      background: #444;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .friendItem:hover, .chatItem:hover {
+      background: #555;
+    }
+
+    .activeChat {
+      background: #777 !important;
+      color: white;
+    }
+
+    /* ADD FRIEND BOX */
+    #addFriendBox {
       margin-top: 10px;
-      margin-bottom: 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #friendSearchInput {
+      padding: 10px;
+      font-size: 20px;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* BOTTOM BUTTONS */
+    #bottomButtons {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* POPUP NEXT TO FRIEND */
+    #popupBox {
+      position: absolute;
+      background: #222;
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      width: 180px;
+      z-index: 999;
+    }
+
+    #popupBox button {
+      font-size: 18px;
+      padding: 8px;
+      border-radius: 6px;
+      background: #4da6ff;
+      border: none;
+      cursor: pointer;
+    }
+
+    #popupBox button:hover {
+      background: #3399ff;
     }
 
     /* CHAT AREA */
@@ -84,8 +160,8 @@
       width: calc(100% - 250px);
     }
 
-    #chatHeader {
-      font-size: 40px;
+    #title {
+      font-size: 60px;
       text-align: center;
       margin: 10px 0;
     }
@@ -135,59 +211,31 @@
       border-radius: 10px;
     }
 
-    button {
+    #inputRow button {
       padding: 14px 26px;
       font-size: 30px;
       border-radius: 10px;
     }
 
-    /* FRIENDS + CHATS */
-    #friendsList, #chatsList {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .friendItem, .chatItem {
-      background: #444;
-      padding: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 20px;
-    }
-
-    .friendItem:hover, .chatItem:hover {
-      background: #555;
-    }
-
-    /* ADD FRIEND BOX */
-    #addFriendBox {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    #friendSearchInput {
-      padding: 10px;
-      font-size: 20px;
-      border-radius: 6px;
-      width: 100%;
-    }
   </style>
 
 </head>
 
 <body>
 
-  <!-- LEFT SIDEBAR -->
+  <!-- POPUP BOX -->
+  <div id="popupBox">
+    <div id="popupFriendName" style="font-size:22px;"></div>
+    <button id="popupStartChatBtn">Start Chat</button>
+    <button id="popupDeleteFriendBtn">Delete Friend</button>
+    <button onclick="closePopup()">Close</button>
+  </div>
+
+  <!-- SIDEBAR -->
   <div id="sidebar">
     <h2>Menu</h2>
 
-    <button onclick="logout()">Logout</button>
-    <button onclick="clearChat()">Clear Chat</button>
-
-    <!-- ADD FRIEND SECTION -->
+    <!-- ADD FRIEND -->
     <div id="addFriendBox">
       <input id="friendSearchInput" placeholder="Search username">
       <button onclick="addFriend(localStorage.getItem('username'), document.getElementById('friendSearchInput').value.trim())">
@@ -195,18 +243,26 @@
       </button>
     </div>
 
-    <!-- CHATS SECTION -->
+    <!-- CHATS -->
     <div class="sidebarSectionTitle">Chats</div>
     <div id="chatsList"></div>
 
-    <!-- FRIENDS SECTION -->
+    <!-- FRIENDS -->
     <div class="sidebarSectionTitle">Friends</div>
     <div id="friendsList"></div>
+
+    <!-- BOTTOM BUTTONS -->
+    <div id="bottomButtons">
+      <button id="globalChatBtn" onclick="switchToGlobalChat()">Global Chat</button>
+      <button id="deleteChatSidebarBtn" onclick="deleteChat()" style="display:none;">Delete Chat</button>
+      <button onclick="logout()">Logout</button>
+      <button onclick="clearChat()">Clear Chat</button>
+    </div>
   </div>
 
   <!-- CHAT AREA -->
   <div id="chatArea">
-    <div id="chatHeader">Global Chat</div>
+    <h1 id="title">ChatterBox</h1>
 
     <div id="messages"></div>
 
