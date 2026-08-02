@@ -3,106 +3,86 @@ if (!myName) window.location.href = "auth.html";
 
 const db = firebase.database();
 
-/* --------------------------------------------------
+/* ==================================================
    STATE
--------------------------------------------------- */
+================================================== */
 let currentChatType = "global";
 let currentChatFriend = null;
 let currentChatID = null;
 let privateMessagesRef = null;
 
-/* --------------------------------------------------
+/* ==================================================
    UTIL
--------------------------------------------------- */
+================================================== */
 function getChatID(a, b) {
   return [a, b].sort().join("_");
 }
 
-/* --------------------------------------------------
+/* ==================================================
    GLOBAL CHAT
--------------------------------------------------- */
+================================================== */
 function switchToGlobalChat() {
   currentChatType = "global";
   currentChatFriend = null;
   currentChatID = null;
 
-  // Remove highlight from chats
   document.querySelectorAll(".chatItem").forEach(i => i.classList.remove("activeChat"));
-
-  // Highlight global chat button
   document.getElementById("globalChatBtn").classList.add("activeChat");
 
-  // Clear messages
   document.getElementById("messages").innerHTML = "";
 
-  // Remove private listener
   if (privateMessagesRef) privateMessagesRef.off();
-
-  // Listen to global messages
   db.ref("messages").off();
+
   db.ref("messages").on("child_added", snap => {
     const msg = snap.val();
     renderMessage(msg.user, msg.text);
   });
 
-  // Hide delete chat button
   document.getElementById("deleteChatSidebarBtn").style.display = "none";
 }
 
-/* --------------------------------------------------
+/* ==================================================
    PRIVATE CHAT
--------------------------------------------------- */
+================================================== */
 function switchToPrivateChat(friend) {
   currentChatType = "private";
   currentChatFriend = friend;
   currentChatID = getChatID(myName, friend);
 
-  // CREATE CHAT NODE IF IT DOESN'T EXIST
+  db.ref("unreadChats/" + myName + "/" + currentChatID).remove();
+
   db.ref("privateChats/" + currentChatID).get().then(snap => {
     if (!snap.exists()) {
-      db.ref("privateChats/" + currentChatID).set({
-        createdAt: Date.now()
-      });
+      db.ref("privateChats/" + currentChatID).set({ createdAt: Date.now() });
     }
 
-    // Remove highlight from global chat
     document.getElementById("globalChatBtn").classList.remove("activeChat");
-
-    // Highlight selected chat
     document.querySelectorAll(".chatItem").forEach(i => i.classList.remove("activeChat"));
+
     const chatItem = document.getElementById("chatItem_" + friend);
     if (chatItem) chatItem.classList.add("activeChat");
 
-    // Clear messages
     document.getElementById("messages").innerHTML = "";
 
-    // Remove global listener
     db.ref("messages").off();
-
-    // Remove previous private listener
     if (privateMessagesRef) privateMessagesRef.off();
 
-    // Listen to private chat
     privateMessagesRef = db.ref("privateChats/" + currentChatID + "/messages");
     privateMessagesRef.on("child_added", snap => {
       const msg = snap.val();
       renderMessage(msg.user, msg.text);
     });
 
-    // Clear unread dot
-    db.ref("unreadChats/" + myName + "/" + currentChatID).remove();
-
-    // Show delete chat button
     document.getElementById("deleteChatSidebarBtn").style.display = "block";
 
-    // REFRESH CHATS SO NEW CHAT APPEARS
     loadChats(myName);
   });
 }
 
-/* --------------------------------------------------
+/* ==================================================
    RENDER MESSAGE
--------------------------------------------------- */
+================================================== */
 function renderMessage(user, text) {
   const div = document.createElement("div");
   div.classList.add("bubble");
@@ -119,26 +99,22 @@ function renderMessage(user, text) {
   div.appendChild(nameTag);
   div.appendChild(textTag);
 
-  if (user === myName) div.classList.add("me");
-  else div.classList.add("other");
+  div.classList.add(user === myName ? "me" : "other");
 
   const box = document.getElementById("messages");
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
 
-/* --------------------------------------------------
+/* ==================================================
    SEND MESSAGE
--------------------------------------------------- */
+================================================== */
 function sendMessage() {
-  const text = document.getElementById("input").value.trim();
+  const input = document.getElementById("input");
+  const text = input.value.trim();
   if (!text) return;
 
-  const msg = {
-    text,
-    user: myName,
-    time: Date.now()
-  };
+  const msg = { text, user: myName, time: Date.now() };
 
   if (currentChatType === "global") {
     db.ref("messages").push(msg);
@@ -146,17 +122,16 @@ function sendMessage() {
     db.ref("privateChats/" + currentChatID + "/messages").push(msg);
   }
 
-  document.getElementById("input").value = "";
+  input.value = "";
 }
 
-/* ENTER KEY SENDS MESSAGE */
-document.getElementById("input").addEventListener("keydown", function (e) {
+document.getElementById("input").addEventListener("keydown", e => {
   if (e.key === "Enter") sendMessage();
 });
 
-/* --------------------------------------------------
+/* ==================================================
    FRIEND SYSTEM
--------------------------------------------------- */
+================================================== */
 async function searchUser(username) {
   const snap = await db.ref("users/" + username).get();
   return snap.exists();
@@ -175,14 +150,13 @@ async function addFriend(myUsername, friendUsername) {
   loadFriends(myName);
 }
 
-/* --------------------------------------------------
+/* ==================================================
    DELETE FRIEND
--------------------------------------------------- */
+================================================== */
 function deleteFriend(friend) {
   db.ref("users/" + myName + "/friends/" + friend).remove();
   db.ref("users/" + friend + "/friends/" + myName).remove();
 
-  // Delete chat if exists
   const chatID = getChatID(myName, friend);
   db.ref("privateChats/" + chatID).remove();
   db.ref("unreadChats/" + myName + "/" + chatID).remove();
@@ -192,9 +166,9 @@ function deleteFriend(friend) {
   loadChats(myName);
 }
 
-/* --------------------------------------------------
+/* ==================================================
    DELETE CHAT
--------------------------------------------------- */
+================================================== */
 function deleteChat() {
   if (!currentChatID) return;
 
@@ -205,16 +179,15 @@ function deleteChat() {
   loadChats(myName);
 }
 
-/* --------------------------------------------------
+/* ==================================================
    POPUP NEXT TO FRIEND
--------------------------------------------------- */
+================================================== */
 function openPopup(friend, element) {
   const popup = document.getElementById("popupBox");
   const nameLabel = document.getElementById("popupFriendName");
 
   nameLabel.textContent = friend;
 
-  // Position popup next to friend item
   const rect = element.getBoundingClientRect();
   popup.style.left = rect.right + 10 + "px";
   popup.style.top = rect.top + "px";
@@ -235,9 +208,9 @@ function closePopup() {
   document.getElementById("popupBox").style.display = "none";
 }
 
-/* --------------------------------------------------
+/* ==================================================
    LOAD FRIENDS
--------------------------------------------------- */
+================================================== */
 function loadFriends(username) {
   db.ref("users/" + username + "/friends").on("value", snap => {
     const friends = snap.val() || {};
@@ -248,9 +221,7 @@ function loadFriends(username) {
       const div = document.createElement("div");
       div.className = "friendItem";
       div.textContent = friend;
-
       div.onclick = () => openPopup(friend, div);
-
       list.appendChild(div);
     });
 
@@ -258,9 +229,9 @@ function loadFriends(username) {
   });
 }
 
-/* --------------------------------------------------
+/* ==================================================
    LOAD CHATS
--------------------------------------------------- */
+================================================== */
 function loadChats(username) {
   const chatsList = document.getElementById("chatsList");
 
@@ -276,7 +247,6 @@ function loadChats(username) {
     Object.keys(friends).forEach(friend => {
       const chatID = getChatID(username, friend);
 
-      // Only show chat if it exists
       db.ref("privateChats/" + chatID).get().then(chatSnap => {
         if (!chatSnap.exists()) return;
 
@@ -305,9 +275,9 @@ function loadChats(username) {
   });
 }
 
-/* --------------------------------------------------
+/* ==================================================
    UNREAD DOT LISTENER
--------------------------------------------------- */
+================================================== */
 db.ref("privateChats").on("child_added", chatSnap => {
   const chatID = chatSnap.key;
 
@@ -321,8 +291,25 @@ db.ref("privateChats").on("child_added", chatSnap => {
   });
 });
 
-/* --------------------------------------------------
+/* ==================================================
    START
--------------------------------------------------- */
+================================================== */
 switchToGlobalChat();
 loadFriends(myName);
+
+function logout() {
+  localStorage.removeItem("username");
+  window.location.href = "auth.html";
+}
+function clearChat() {
+  if (currentChatType === "global") {
+    db.ref("messages").remove();
+    document.getElementById("messages").innerHTML = "";
+    return;
+  }
+
+  if (currentChatID) {
+    db.ref("privateChats/" + currentChatID + "/messages").remove();
+    document.getElementById("messages").innerHTML = "";
+  }
+}

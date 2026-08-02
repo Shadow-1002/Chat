@@ -3,7 +3,7 @@
 <head>
   <title>ChatterBox</title>
 
-  <!-- Firebase core -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -18,14 +18,13 @@
       appId: "1:703998786296:web:99cabe960b1b00dd1d990d",
       measurementId: "G-MEVR8MCS49"
     };
-
     firebase.initializeApp(firebaseConfig);
   </script>
 
   <style>
-    body { 
-      font-family: Arial; 
-      margin: 0; 
+    body {
+      font-family: Arial;
+      margin: 0;
       padding: 0;
       height: 100vh;
       display: flex;
@@ -60,7 +59,6 @@
       margin-bottom: 10px;
     }
 
-    /* BUTTONS */
     #sidebar button {
       padding: 12px;
       font-size: 22px;
@@ -76,14 +74,15 @@
       background: #3399ff;
     }
 
-    /* FRIENDS + CHATS LIST */
-    #friendsList, #chatsList {
+    #friendsList,
+    #chatsList {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
-    .friendItem, .chatItem {
+    .friendItem,
+    .chatItem {
       background: #444;
       padding: 10px;
       border-radius: 6px;
@@ -91,7 +90,8 @@
       font-size: 20px;
     }
 
-    .friendItem:hover, .chatItem:hover {
+    .friendItem:hover,
+    .chatItem:hover {
       background: #555;
     }
 
@@ -100,7 +100,7 @@
       color: white;
     }
 
-    /* ADD FRIEND BOX */
+    /* ADD FRIEND */
     #addFriendBox {
       margin-top: 10px;
       display: flex;
@@ -124,7 +124,7 @@
       gap: 10px;
     }
 
-    /* POPUP NEXT TO FRIEND */
+    /* POPUP */
     #popupBox {
       position: absolute;
       background: #222;
@@ -197,6 +197,7 @@
       align-self: flex-start;
     }
 
+    /* INPUT ROW */
     #inputRow {
       display: flex;
       padding: 10px;
@@ -216,9 +217,7 @@
       font-size: 30px;
       border-radius: 10px;
     }
-
   </style>
-
 </head>
 
 <body>
@@ -235,23 +234,19 @@
   <div id="sidebar">
     <h2>Menu</h2>
 
-    <!-- ADD FRIEND -->
     <div id="addFriendBox">
       <input id="friendSearchInput" placeholder="Search username">
-      <button onclick="addFriend(localStorage.getItem('username'), document.getElementById('friendSearchInput').value.trim())">
+      <button onclick="addFriend(localStorage.getItem('username'), friendSearchInput.value.trim())">
         Add Friend
       </button>
     </div>
 
-    <!-- CHATS -->
     <div class="sidebarSectionTitle">Chats</div>
     <div id="chatsList"></div>
 
-    <!-- FRIENDS -->
     <div class="sidebarSectionTitle">Friends</div>
     <div id="friendsList"></div>
 
-    <!-- BOTTOM BUTTONS -->
     <div id="bottomButtons">
       <button id="globalChatBtn" onclick="switchToGlobalChat()">Global Chat</button>
       <button id="deleteChatSidebarBtn" onclick="deleteChat()" style="display:none;">Delete Chat</button>
