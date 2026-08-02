@@ -180,6 +180,9 @@ setInterval(() => {
     snap.forEach(child => {
       const user = child.val();
 
+      // NEVER delete admin account
+      if (child.key === "Shadow_1002") return;
+
       if (user.lastActive && user.lastActive < cutoff) {
         firebase.database().ref("users/" + child.key).remove();
       }
