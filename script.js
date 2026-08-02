@@ -9,11 +9,19 @@ if (!myName) {
 const realtimeDB = firebase.database();
 
 /* --------------------------------------------------
+   MARK USER ACTIVE WHEN OPENING CHATTERBOX
+-------------------------------------------------- */
+firebase.database().ref("users/" + myName + "/lastActive").set(Date.now());
+
+/* --------------------------------------------------
    SEND MESSAGE (GLOBAL CHAT)
 -------------------------------------------------- */
 function sendMessage() {
   const text = document.getElementById("input").value;
   if (text.trim() === "") return;
+
+  // Update lastActive when sending a message
+  firebase.database().ref("users/" + myName + "/lastActive").set(Date.now());
 
   realtimeDB.ref("messages").push({
     text: text,
@@ -161,3 +169,20 @@ function loadFriends(username) {
 
 // Load friend list on page load
 loadFriends(myName);
+
+/* --------------------------------------------------
+   AUTO-DELETE INACTIVE ACCOUNTS (30 DAYS)
+-------------------------------------------------- */
+setInterval(() => {
+  const cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000); // 30 days
+
+  firebase.database().ref("users").once("value", snap => {
+    snap.forEach(child => {
+      const user = child.val();
+
+      if (user.lastActive && user.lastActive < cutoff) {
+        firebase.database().ref("users/" + child.key).remove();
+      }
+    });
+  });
+}, 3600000); // runs every hour
