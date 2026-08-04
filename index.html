@@ -52,35 +52,63 @@
       margin-bottom: 10px;
     }
 
-    .sidebarSectionTitle {
-      font-size: 26px;
-      font-weight: bold;
-      margin-top: 20px;
-      margin-bottom: 10px;
-    }
-
-    #sidebar button {
-      padding: 12px;
-      font-size: 22px;
-      border: none;
-      border-radius: 8px;
-      background: #4da6ff;
-      color: white;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-
-    #sidebar button:hover {
-      background: #3399ff;
-    }
-
-    #friendsList,
-    #chatsList {
+    /* TOP SECTION */
+    #addFriendBox {
+      margin-top: 10px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      flex-shrink: 0;
     }
 
+    #friendSearchInput {
+      padding: 10px;
+      font-size: 20px;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* MIDDLE SECTION (equal height) */
+    #middleSections {
+      flex: 1; /* THIS is the fix */
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 20px;
+      overflow: hidden; /* prevents overflow pushing bottom buttons */
+    }
+
+    .section {
+      flex: 1; /* equal height */
+      display: flex;
+      flex-direction: column;
+      min-height: 0; /* REQUIRED for proper flex scrolling */
+    }
+
+    .sectionHeader {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .sectionDivider {
+      height: 1px;
+      background: #777;
+      margin-bottom: 10px;
+    }
+
+    .sectionContent {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+      min-height: 0; /* REQUIRED for scroll */
+    }
+
+    /* CHAT & FRIEND ITEMS */
     .friendItem,
     .chatItem {
       background: #444;
@@ -100,28 +128,27 @@
       color: white;
     }
 
-    /* ADD FRIEND */
-    #addFriendBox {
-      margin-top: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    #friendSearchInput {
-      padding: 10px;
-      font-size: 20px;
-      border-radius: 6px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
     /* BOTTOM BUTTONS */
     #bottomButtons {
       margin-top: auto;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      flex-shrink: 0;
+    }
+
+    #sidebar button {
+      padding: 12px;
+      font-size: 22px;
+      border: none;
+      border-radius: 8px;
+      background: #4da6ff;
+      color: white;
+      cursor: pointer;
+    }
+
+    #sidebar button:hover {
+      background: #3399ff;
     }
 
     /* POPUP */
@@ -234,6 +261,7 @@
   <div id="sidebar">
     <h2>Menu</h2>
 
+    <!-- TOP -->
     <div id="addFriendBox">
       <input id="friendSearchInput" placeholder="Search username">
       <button onclick="addFriend(localStorage.getItem('username'), friendSearchInput.value.trim())">
@@ -241,12 +269,24 @@
       </button>
     </div>
 
-    <div class="sidebarSectionTitle">Chats</div>
-    <div id="chatsList"></div>
+    <!-- MIDDLE (equal height sections) -->
+    <div id="middleSections">
 
-    <div class="sidebarSectionTitle">Friends</div>
-    <div id="friendsList"></div>
+      <div class="section">
+        <div class="sectionHeader">Chats</div>
+        <div class="sectionDivider"></div>
+        <div class="sectionContent" id="chatsList"></div>
+      </div>
 
+      <div class="section">
+        <div class="sectionHeader">Friends</div>
+        <div class="sectionDivider"></div>
+        <div class="sectionContent" id="friendsList"></div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM -->
     <div id="bottomButtons">
       <button id="globalChatBtn" onclick="switchToGlobalChat()">Global Chat</button>
       <button id="deleteChatSidebarBtn" onclick="deleteChat()" style="display:none;">Delete Chat</button>
@@ -266,7 +306,12 @@
       <button onclick="sendMessage()">Send</button>
     </div>
   </div>
+<<<<<<< HEAD
+
+=======
   
+>>>>>>> 3531c318a4ebba2d7c18a114be7e7efd15152873
   <script src="script.js"></script>
 </body>
 </html>
+

@@ -4,6 +4,41 @@ if (!myName) window.location.href = "auth.html";
 const db = firebase.database();
 
 /* ==================================================
+   POPUP SYSTEM
+================================================== */
+function showError(msg) {
+  const box = document.createElement("div");
+  box.textContent = msg;
+  box.style.position = "fixed";
+  box.style.top = "20px";
+  box.style.right = "20px";
+  box.style.background = "#ff4444";
+  box.style.color = "white";
+  box.style.padding = "10px 15px";
+  box.style.borderRadius = "6px";
+  box.style.fontSize = "20px";
+  box.style.zIndex = "9999";
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 2000);
+}
+
+function showSuccess(msg) {
+  const box = document.createElement("div");
+  box.textContent = msg;
+  box.style.position = "fixed";
+  box.style.top = "20px";
+  box.style.right = "20px";
+  box.style.background = "#4da6ff";
+  box.style.color = "white";
+  box.style.padding = "10px 15px";
+  box.style.borderRadius = "6px";
+  box.style.fontSize = "20px";
+  box.style.zIndex = "9999";
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 2000);
+}
+
+/* ==================================================
    STATE
 ================================================== */
 let currentChatType = "global";
@@ -21,7 +56,7 @@ function getChatID(a, b) {
 /* ==================================================
    GLOBAL CHAT
 ================================================== */
-function switchToGlobalChat() {
+function switchToGlobalChat(showPopup = true) {
   currentChatType = "global";
   currentChatFriend = null;
   currentChatID = null;
@@ -40,7 +75,12 @@ function switchToGlobalChat() {
   });
 
   document.getElementById("deleteChatSidebarBtn").style.display = "none";
+
+  if (showPopup) {
+    showSuccess("Switched to global chat");
+  }
 }
+
 
 /* ==================================================
    PRIVATE CHAT
@@ -55,6 +95,7 @@ function switchToPrivateChat(friend) {
   db.ref("privateChats/" + currentChatID).get().then(snap => {
     if (!snap.exists()) {
       db.ref("privateChats/" + currentChatID).set({ createdAt: Date.now() });
+      showSuccess("Chat started.");
     }
 
     document.getElementById("globalChatBtn").classList.remove("activeChat");
@@ -123,6 +164,8 @@ function sendMessage() {
   }
 
   input.value = "";
+
+  showSuccess("Message sent");
 }
 
 document.getElementById("input").addEventListener("keydown", e => {
@@ -138,16 +181,18 @@ async function searchUser(username) {
 }
 
 async function addFriend(myUsername, friendUsername) {
-  if (!friendUsername) return alert("Enter a username.");
-  if (myUsername === friendUsername) return alert("You can't add yourself.");
+  if (!friendUsername) return showError("Enter a username.");
+  if (myUsername === friendUsername) return showError("You can't add yourself.");
 
   const exists = await searchUser(friendUsername);
-  if (!exists) return alert("User not found.");
+  if (!exists) return showError("User not found.");
 
   await db.ref("users/" + myUsername + "/friends/" + friendUsername).set(true);
   await db.ref("users/" + friendUsername + "/friends/" + myUsername).set(true);
 
   loadFriends(myName);
+
+  showSuccess("Friend added.");
 }
 
 /* ==================================================
@@ -164,6 +209,8 @@ function deleteFriend(friend) {
   closePopup();
   loadFriends(myName);
   loadChats(myName);
+
+  showSuccess("Friend deleted.");
 }
 
 /* ==================================================
@@ -175,8 +222,13 @@ function deleteChat() {
   db.ref("privateChats/" + currentChatID).remove();
   db.ref("unreadChats/" + myName + "/" + currentChatID).remove();
 
-  switchToGlobalChat();
-  loadChats(myName);
+  showSuccess("Chat deleted.");
+
+  // Wait for the popup to finish, THEN switch to global chat
+  setTimeout(() => {
+    switchToGlobalChat(false); // prevents "Switched to global chat" popup
+    loadChats(myName);
+  }, 2000);
 }
 
 /* ==================================================
@@ -299,17 +351,23 @@ loadFriends(myName);
 
 function logout() {
   localStorage.removeItem("username");
-  window.location.href = "auth.html";
+  showSuccess("Logged out.");
+  setTimeout(() => {
+    window.location.href = "auth.html";
+  }, 500);
 }
+
 function clearChat() {
   if (currentChatType === "global") {
     db.ref("messages").remove();
     document.getElementById("messages").innerHTML = "";
+    showSuccess("Chat cleared");
     return;
   }
 
   if (currentChatID) {
     db.ref("privateChats/" + currentChatID + "/messages").remove();
     document.getElementById("messages").innerHTML = "";
+    showSuccess("Chat cleared");
   }
 }
