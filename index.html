@@ -254,7 +254,7 @@
       <button onclick="clearChat()">Clear Chat</button>
     </div>
   </div>
-
+  
   <!-- CHAT AREA -->
   <div id="chatArea">
     <h1 id="title">ChatterBox</h1>
@@ -266,6 +266,14 @@
       <button onclick="sendMessage()">Send</button>
     </div>
   </div>
+  
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("firebase-messaging-sw.js")
+    .then(() => console.log("Service worker registered"))
+    .catch(err => console.log("Service worker failed:", err));
+}
+</script>
 
   <script src="script.js"></script>
 </body>
