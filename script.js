@@ -1,41 +1,49 @@
-let myName = localStorage.getItem("username");
+/* ==================================================
+   INIT
+================================================== */
+const myName = localStorage.getItem("username");
 if (!myName) window.location.href = "auth.html";
 
 const db = firebase.database();
 
 /* ==================================================
+   DESKTOP NOTIFICATIONS
+================================================== */
+Notification.requestPermission();
+
+function sendDesktopNotification(title, body) {
+  if (Notification.permission === "granted") {
+    new Notification(title, { body });
+  }
+}
+
+/* ==================================================
    POPUP SYSTEM
 ================================================== */
-function showError(msg) {
+function makePopup(msg, bgColor) {
   const box = document.createElement("div");
+  Object.assign(box.style, {
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    background: bgColor,
+    color: "white",
+    padding: "10px 15px",
+    borderRadius: "6px",
+    fontSize: "20px",
+    zIndex: "9999"
+  });
   box.textContent = msg;
-  box.style.position = "fixed";
-  box.style.top = "20px";
-  box.style.right = "20px";
-  box.style.background = "#ff4444";
-  box.style.color = "white";
-  box.style.padding = "10px 15px";
-  box.style.borderRadius = "6px";
-  box.style.fontSize = "20px";
-  box.style.zIndex = "9999";
   document.body.appendChild(box);
   setTimeout(() => box.remove(), 2000);
 }
 
+function showError(msg) {
+  makePopup(msg, "#ff4444");
+}
+
 function showSuccess(msg) {
-  const box = document.createElement("div");
-  box.textContent = msg;
-  box.style.position = "fixed";
-  box.style.top = "20px";
-  box.style.right = "20px";
-  box.style.background = "#4da6ff";
-  box.style.color = "white";
-  box.style.padding = "10px 15px";
-  box.style.borderRadius = "6px";
-  box.style.fontSize = "20px";
-  box.style.zIndex = "9999";
-  document.body.appendChild(box);
-  setTimeout(() => box.remove(), 2000);
+  makePopup(msg, "#4da6ff");
 }
 
 /* ==================================================
@@ -63,8 +71,8 @@ function switchToGlobalChat(showPopup = true) {
 
   document.querySelectorAll(".chatItem").forEach(i => i.classList.remove("activeChat"));
   document.getElementById("globalChatBtn").classList.add("activeChat");
-
   document.getElementById("messages").innerHTML = "";
+  document.getElementById("deleteChatSidebarBtn").style.display = "none";
 
   if (privateMessagesRef) privateMessagesRef.off();
   db.ref("messages").off();
@@ -74,13 +82,8 @@ function switchToGlobalChat(showPopup = true) {
     renderMessage(msg.user, msg.text);
   });
 
-  document.getElementById("deleteChatSidebarBtn").style.display = "none";
-
-  if (showPopup) {
-    showSuccess("Switched to global chat");
-  }
+  if (showPopup) showSuccess("Switched to global chat");
 }
-
 
 /* ==================================================
    PRIVATE CHAT
@@ -90,32 +93,31 @@ function switchToPrivateChat(friend) {
   currentChatFriend = friend;
   currentChatID = getChatID(myName, friend);
 
-  db.ref("unreadChats/" + myName + "/" + currentChatID).remove();
+  db.ref(`unreadChats/${myName}/${currentChatID}`).remove();
 
-  db.ref("privateChats/" + currentChatID).get().then(snap => {
+  db.ref(`privateChats/${currentChatID}`).get().then(snap => {
     if (!snap.exists()) {
-      db.ref("privateChats/" + currentChatID).set({ createdAt: Date.now() });
+      db.ref(`privateChats/${currentChatID}`).set({ createdAt: Date.now() });
       showSuccess("Chat started.");
     }
 
     document.getElementById("globalChatBtn").classList.remove("activeChat");
     document.querySelectorAll(".chatItem").forEach(i => i.classList.remove("activeChat"));
 
-    const chatItem = document.getElementById("chatItem_" + friend);
+    const chatItem = document.getElementById(`chatItem_${friend}`);
     if (chatItem) chatItem.classList.add("activeChat");
 
     document.getElementById("messages").innerHTML = "";
+    document.getElementById("deleteChatSidebarBtn").style.display = "block";
 
     db.ref("messages").off();
     if (privateMessagesRef) privateMessagesRef.off();
 
-    privateMessagesRef = db.ref("privateChats/" + currentChatID + "/messages");
+    privateMessagesRef = db.ref(`privateChats/${currentChatID}/messages`);
     privateMessagesRef.on("child_added", snap => {
       const msg = snap.val();
       renderMessage(msg.user, msg.text);
     });
-
-    document.getElementById("deleteChatSidebarBtn").style.display = "block";
 
     loadChats(myName);
   });
@@ -126,12 +128,14 @@ function switchToPrivateChat(friend) {
 ================================================== */
 function renderMessage(user, text) {
   const div = document.createElement("div");
-  div.classList.add("bubble");
+  div.classList.add("bubble", user === myName ? "me" : "other");
 
   const nameTag = document.createElement("div");
-  nameTag.style.fontSize = "22px";
-  nameTag.style.opacity = "0.7";
-  nameTag.style.marginBottom = "4px";
+  Object.assign(nameTag.style, {
+    fontSize: "22px",
+    opacity: "0.7",
+    marginBottom: "4px"
+  });
   nameTag.textContent = user;
 
   const textTag = document.createElement("div");
@@ -139,8 +143,6 @@ function renderMessage(user, text) {
 
   div.appendChild(nameTag);
   div.appendChild(textTag);
-
-  div.classList.add(user === myName ? "me" : "other");
 
   const box = document.getElementById("messages");
   box.appendChild(div);
@@ -160,17 +162,12 @@ function sendMessage() {
   if (currentChatType === "global") {
     db.ref("messages").push(msg);
   } else {
-    db.ref("privateChats/" + currentChatID + "/messages").push(msg);
+    db.ref(`privateChats/${currentChatID}/messages`).push(msg);
   }
 
   input.value = "";
-
   showSuccess("Message sent");
 }
-
-document.getElementById("input").addEventListener("keydown", e => {
-  if (e.key === "Enter") sendMessage();
-});
 
 /* ==================================================
    FRIEND SYSTEM
@@ -187,11 +184,10 @@ async function addFriend(myUsername, friendUsername) {
   const exists = await searchUser(friendUsername);
   if (!exists) return showError("User not found.");
 
-  await db.ref("users/" + myUsername + "/friends/" + friendUsername).set(true);
-  await db.ref("users/" + friendUsername + "/friends/" + myUsername).set(true);
+  await db.ref(`users/${myUsername}/friends/${friendUsername}`).set(true);
+  await db.ref(`users/${friendUsername}/friends/${myUsername}`).set(true);
 
   loadFriends(myName);
-
   showSuccess("Friend added.");
 }
 
@@ -199,12 +195,12 @@ async function addFriend(myUsername, friendUsername) {
    DELETE FRIEND
 ================================================== */
 function deleteFriend(friend) {
-  db.ref("users/" + myName + "/friends/" + friend).remove();
-  db.ref("users/" + friend + "/friends/" + myName).remove();
+  db.ref(`users/${myName}/friends/${friend}`).remove();
+  db.ref(`users/${friend}/friends/${myName}`).remove();
 
   const chatID = getChatID(myName, friend);
-  db.ref("privateChats/" + chatID).remove();
-  db.ref("unreadChats/" + myName + "/" + chatID).remove();
+  db.ref(`privateChats/${chatID}`).remove();
+  db.ref(`unreadChats/${myName}/${chatID}`).remove();
 
   closePopup();
   loadFriends(myName);
@@ -219,14 +215,13 @@ function deleteFriend(friend) {
 function deleteChat() {
   if (!currentChatID) return;
 
-  db.ref("privateChats/" + currentChatID).remove();
-  db.ref("unreadChats/" + myName + "/" + currentChatID).remove();
+  db.ref(`privateChats/${currentChatID}`).remove();
+  db.ref(`unreadChats/${myName}/${currentChatID}`).remove();
 
   showSuccess("Chat deleted.");
 
-  // Wait for the popup to finish, THEN switch to global chat
   setTimeout(() => {
-    switchToGlobalChat(false); // prevents "Switched to global chat" popup
+    switchToGlobalChat(false);
     loadChats(myName);
   }, 2000);
 }
@@ -243,7 +238,6 @@ function openPopup(friend, element) {
   const rect = element.getBoundingClientRect();
   popup.style.left = rect.right + 10 + "px";
   popup.style.top = rect.top + "px";
-
   popup.style.display = "flex";
 
   document.getElementById("popupStartChatBtn").onclick = () => {
@@ -264,7 +258,7 @@ function closePopup() {
    LOAD FRIENDS
 ================================================== */
 function loadFriends(username) {
-  db.ref("users/" + username + "/friends").on("value", snap => {
+  db.ref(`users/${username}/friends`).on("value", snap => {
     const friends = snap.val() || {};
     const list = document.getElementById("friendsList");
     list.innerHTML = "";
@@ -288,8 +282,8 @@ function loadChats(username) {
   const chatsList = document.getElementById("chatsList");
 
   Promise.all([
-    db.ref("users/" + username + "/friends").get(),
-    db.ref("unreadChats/" + username).get()
+    db.ref(`users/${username}/friends`).get(),
+    db.ref(`unreadChats/${username}`).get()
   ]).then(([friendsSnap, unreadSnap]) => {
     const friends = friendsSnap.val() || {};
     const unread = unreadSnap.val() || {};
@@ -299,26 +293,27 @@ function loadChats(username) {
     Object.keys(friends).forEach(friend => {
       const chatID = getChatID(username, friend);
 
-      db.ref("privateChats/" + chatID).get().then(chatSnap => {
+      db.ref(`privateChats/${chatID}`).get().then(chatSnap => {
         if (!chatSnap.exists()) return;
 
         const div = document.createElement("div");
         div.className = "chatItem";
-        div.id = "chatItem_" + friend;
+        div.id = `chatItem_${friend}`;
 
         const nameSpan = document.createElement("span");
         nameSpan.textContent = friend;
 
         const dotSpan = document.createElement("span");
-        dotSpan.style.float = "right";
-        dotSpan.style.width = "10px";
-        dotSpan.style.height = "10px";
-        dotSpan.style.borderRadius = "50%";
-        dotSpan.style.backgroundColor = unread[chatID] ? "red" : "transparent";
+        Object.assign(dotSpan.style, {
+          float: "right",
+          width: "10px",
+          height: "10px",
+          borderRadius: "50%",
+          backgroundColor: unread[chatID] ? "red" : "transparent"
+        });
 
         div.appendChild(nameSpan);
         div.appendChild(dotSpan);
-
         div.onclick = () => switchToPrivateChat(friend);
 
         chatsList.appendChild(div);
@@ -328,17 +323,18 @@ function loadChats(username) {
 }
 
 /* ==================================================
-   UNREAD DOT LISTENER
+   UNREAD DOT LISTENER + DESKTOP NOTIFICATIONS
 ================================================== */
 db.ref("privateChats").on("child_added", chatSnap => {
   const chatID = chatSnap.key;
 
-  db.ref("privateChats/" + chatID + "/messages").on("child_added", msgSnap => {
+  db.ref(`privateChats/${chatID}/messages`).on("child_added", msgSnap => {
     const msg = msgSnap.val();
 
     if (msg.user !== myName && currentChatID !== chatID) {
-      db.ref("unreadChats/" + myName + "/" + chatID).set(true);
+      db.ref(`unreadChats/${myName}/${chatID}`).set(true);
       loadChats(myName);
+      sendDesktopNotification(`New message from ${msg.user}`, msg.text);
     }
   });
 });
@@ -358,16 +354,28 @@ function logout() {
 }
 
 function clearChat() {
+  const messagesBox = document.getElementById("messages");
+
   if (currentChatType === "global") {
     db.ref("messages").remove();
-    document.getElementById("messages").innerHTML = "";
+    messagesBox.innerHTML = "";
     showSuccess("Chat cleared");
     return;
   }
 
   if (currentChatID) {
-    db.ref("privateChats/" + currentChatID + "/messages").remove();
-    document.getElementById("messages").innerHTML = "";
+    db.ref(`privateChats/${currentChatID}/messages`).remove();
+    messagesBox.innerHTML = "";
     showSuccess("Chat cleared");
   }
 }
+
+/* ==================================================
+   ENTER KEY SEND
+================================================== */
+document.getElementById("input").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    sendMessage();
+  }
+});
