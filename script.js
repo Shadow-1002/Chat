@@ -323,18 +323,23 @@ function loadChats(username) {
 }
 
 /* ==================================================
-   UNREAD DOT LISTENER + DESKTOP NOTIFICATIONS
+   UNREAD DOT LISTENER + FIXED NOTIFICATIONS
 ================================================== */
 db.ref("privateChats").on("child_added", chatSnap => {
   const chatID = chatSnap.key;
 
+  // Only listen to chats that involve me
+  if (!chatID.includes(myName)) return;
+
   db.ref(`privateChats/${chatID}/messages`).on("child_added", msgSnap => {
     const msg = msgSnap.val();
 
+    // Only notify if it's not my message AND I'm not currently in that chat
     if (msg.user !== myName && currentChatID !== chatID) {
       db.ref(`unreadChats/${myName}/${chatID}`).set(true);
       loadChats(myName);
-      sendDesktopNotification(`New message from ${msg.user}`, msg.text);
+
+      sendDesktopNotification("ChatterBox", `New message from ${msg.user}: ${msg.text}`);
     }
   });
 });
