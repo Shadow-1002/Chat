@@ -345,6 +345,54 @@ db.ref("privateChats").once("value").then(allChatsSnap => {
   });
 });
 
+/* --------------------------------------------------
+   AUTO DELETE MESSAGES AFTER 1 HOUR
+-------------------------------------------------- */
+function autoDeleteMessages() {
+  const cutoff = Date.now() - 3600000; // 1 hour
+
+  // 1. Delete from existing chats
+  db.ref("privateChats").once("value").then(chatsSnap => {
+    const chats = chatsSnap.val() || {};
+
+    Object.keys(chats).forEach(chatID => {
+      deleteOldMessagesInChat(chatID, cutoff);
+    });
+  });
+
+  // 2. Delete from new chats
+  db.ref("privateChats").on("child_added", chatSnap => {
+    const chatID = chatSnap.key;
+    deleteOldMessagesInChat(chatID, cutoff);
+  });
+
+  // 3. Delete from global chat
+  db.ref("messages").once("value").then(msgSnap => {
+    const msgs = msgSnap.val() || {};
+
+    Object.keys(msgs).forEach(msgID => {
+      if (msgs[msgID].time < cutoff) {
+        db.ref("messages/" + msgID).remove();
+      }
+    });
+  });
+}
+
+function deleteOldMessagesInChat(chatID, cutoff) {
+  db.ref("privateChats/" + chatID + "/messages").once("value").then(msgSnap => {
+    const msgs = msgSnap.val() || {};
+
+    Object.keys(msgs).forEach(msgID => {
+      if (msgs[msgID].time < cutoff) {
+        db.ref("privateChats/" + chatID + "/messages/" + msgID).remove();
+      }
+    });
+  });
+}
+
+// Run every minute
+setInterval(autoDeleteMessages, 60000);
+
 /* ==================================================
    START
 ================================================== */
