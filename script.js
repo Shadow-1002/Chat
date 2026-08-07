@@ -326,16 +326,25 @@ function loadChats(username) {
    FIXED NOTIFICATIONS + AUTO LISTENERS
 ================================================== */
 
+let lastNotificationTime = Date.now();
+
 function listenToChat(chatID) {
   db.ref(`privateChats/${chatID}/messages`).on("child_added", msgSnap => {
     const msg = msgSnap.val();
 
+    // Ignore old messages (pre-reload)
+    if (msg.time <= lastNotificationTime) return;
+
+    // Only notify if it's not my message AND I'm not currently in that chat
     if (msg.user !== myName && currentChatID !== chatID) {
       db.ref(`unreadChats/${myName}/${chatID}`).set(true);
       loadChats(myName);
 
       sendDesktopNotification("ChatterBox", `New message from ${msg.user}: ${msg.text}`);
     }
+
+    // Update last seen time
+    lastNotificationTime = msg.time;
   });
 }
 
