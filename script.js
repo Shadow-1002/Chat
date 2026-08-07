@@ -323,53 +323,63 @@ function loadChats(username) {
 }
 
 /* ==================================================
-   UNREAD DOT LISTENER + FIXED NOTIFICATIONS
+   FIXED NOTIFICATIONS + AUTO LISTENERS
 ================================================== */
-db.ref("privateChats").once("value").then(allChatsSnap => {
-  const allChats = allChatsSnap.val() || {};
 
-  Object.keys(allChats).forEach(chatID => {
-    // Only listen to chats that involve me
-    if (!chatID.includes(myName)) return;
+function listenToChat(chatID) {
+  db.ref(`privateChats/${chatID}/messages`).on("child_added", msgSnap => {
+    const msg = msgSnap.val();
 
-    db.ref(`privateChats/${chatID}/messages`).on("child_added", msgSnap => {
-      const msg = msgSnap.val();
+    if (msg.user !== myName && currentChatID !== chatID) {
+      db.ref(`unreadChats/${myName}/${chatID}`).set(true);
+      loadChats(myName);
 
-      if (msg.user !== myName && currentChatID !== chatID) {
-        db.ref(`unreadChats/${myName}/${chatID}`).set(true);
-        loadChats(myName);
+      sendDesktopNotification("ChatterBox", `New message from ${msg.user}: ${msg.text}`);
+    }
+  });
+}
 
-        sendDesktopNotification("ChatterBox", `New message from ${msg.user}: ${msg.text}`);
+function attachMessageListeners() {
+  // Existing chats
+  db.ref("privateChats").once("value").then(allChatsSnap => {
+    const allChats = allChatsSnap.val() || {};
+
+    Object.keys(allChats).forEach(chatID => {
+      if (chatID.toLowerCase().includes(myName.toLowerCase())) {
+        listenToChat(chatID);
       }
     });
   });
-});
+
+  // New chats
+  db.ref("privateChats").on("child_added", chatSnap => {
+    const chatID = chatSnap.key;
+
+    if (chatID.toLowerCase().includes(myName.toLowerCase())) {
+      listenToChat(chatID);
+    }
+  });
+}
+
+attachMessageListeners();
 
 /* --------------------------------------------------
    AUTO DELETE MESSAGES AFTER 1 HOUR
 -------------------------------------------------- */
 function autoDeleteMessages() {
-  const cutoff = Date.now() - 3600000; // 1 hour
+  const cutoff = Date.now() - 3600000;
 
-  // 1. Delete from existing chats
   db.ref("privateChats").once("value").then(chatsSnap => {
     const chats = chatsSnap.val() || {};
-
-    Object.keys(chats).forEach(chatID => {
-      deleteOldMessagesInChat(chatID, cutoff);
-    });
+    Object.keys(chats).forEach(chatID => deleteOldMessagesInChat(chatID, cutoff));
   });
 
-  // 2. Delete from new chats
   db.ref("privateChats").on("child_added", chatSnap => {
-    const chatID = chatSnap.key;
-    deleteOldMessagesInChat(chatID, cutoff);
+    deleteOldMessagesInChat(chatSnap.key, cutoff);
   });
 
-  // 3. Delete from global chat
   db.ref("messages").once("value").then(msgSnap => {
     const msgs = msgSnap.val() || {};
-
     Object.keys(msgs).forEach(msgID => {
       if (msgs[msgID].time < cutoff) {
         db.ref("messages/" + msgID).remove();
@@ -379,18 +389,16 @@ function autoDeleteMessages() {
 }
 
 function deleteOldMessagesInChat(chatID, cutoff) {
-  db.ref("privateChats/" + chatID + "/messages").once("value").then(msgSnap => {
+  db.ref(`privateChats/${chatID}/messages`).once("value").then(msgSnap => {
     const msgs = msgSnap.val() || {};
-
     Object.keys(msgs).forEach(msgID => {
       if (msgs[msgID].time < cutoff) {
-        db.ref("privateChats/" + chatID + "/messages/" + msgID).remove();
+        db.ref(`privateChats/${chatID}/messages/${msgID}`).remove();
       }
     });
   });
 }
 
-// Run every minute
 setInterval(autoDeleteMessages, 60000);
 
 /* ==================================================
