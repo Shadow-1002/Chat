@@ -404,6 +404,11 @@ setInterval(autoDeleteMessages, 60000);
 /* ==================================================
    START
 ================================================== */
+
+// Attach listeners FIRST so notifications work immediately
+attachMessageListeners();
+
+// Then load UI
 switchToGlobalChat();
 loadFriends(myName);
 
