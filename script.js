@@ -328,12 +328,16 @@ function loadChats(username) {
 
 let lastNotificationTime = Date.now();
 
+let lastSeen = {}; // track last message per chat
+
 function listenToChat(chatID) {
+  if (!lastSeen[chatID]) lastSeen[chatID] = 0;
+
   db.ref(`privateChats/${chatID}/messages`).on("child_added", msgSnap => {
     const msg = msgSnap.val();
 
     // Ignore old messages (pre-reload)
-    if (msg.time <= lastNotificationTime) return;
+    if (msg.time <= lastSeen[chatID]) return;
 
     // Only notify if it's not my message AND I'm not currently in that chat
     if (msg.user !== myName && currentChatID !== chatID) {
@@ -343,9 +347,13 @@ function listenToChat(chatID) {
       sendDesktopNotification("ChatterBox", `New message from ${msg.user}: ${msg.text}`);
     }
 
-    lastNotificationTime = msg.time;
+    // Only update lastSeen for OTHER people's messages
+    if (msg.user !== myName) {
+      lastSeen[chatID] = msg.time;
+    }
   });
 }
+
 
 function attachMessageListeners() {
   // Existing chats
