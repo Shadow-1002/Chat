@@ -323,7 +323,7 @@ function loadChats(username) {
 }
 
 /* ==================================================
-   FIXED NOTIFICATIONS + AUTO LISTENERS
+   FIXED NOTIFICATIONS + TIMESTAMP FILTER
 ================================================== */
 
 let lastNotificationTime = Date.now();
@@ -343,7 +343,6 @@ function listenToChat(chatID) {
       sendDesktopNotification("ChatterBox", `New message from ${msg.user}: ${msg.text}`);
     }
 
-    // Update last seen time
     lastNotificationTime = msg.time;
   });
 }
@@ -370,11 +369,9 @@ function attachMessageListeners() {
   });
 }
 
-attachMessageListeners();
-
-/* --------------------------------------------------
+/* ==================================================
    AUTO DELETE MESSAGES AFTER 1 HOUR
--------------------------------------------------- */
+================================================== */
 function autoDeleteMessages() {
   const cutoff = Date.now() - 3600000;
 
